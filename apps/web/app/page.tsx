@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API = process.env.NEXT_PUBLIC_API_URL ?? '/api';
 const FUEL_NAMES: Record<string, string> = { SP: 'Super sans plomb', GO: 'Gasoil', PL: 'Pétrole' };
 
 interface Station {
