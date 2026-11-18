@@ -6,6 +6,9 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:net';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import pg from 'pg';
 import mqtt from 'mqtt';
 import { Aedes } from 'aedes';
@@ -16,7 +19,7 @@ import { memoryStore, emptyData } from '../../gateway-sim/src/store.ts';
 
 const DB = process.env.TEST_DATABASE_URL;
 const skip = !DB && 'TEST_DATABASE_URL absent';
-let broker, server, app, base, clients = [], gws = {};
+let broker, server, app, base, clients = [], gws = {}, notifier, commandsSvc;
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 async function until(fn, ms = 5000) {
@@ -61,11 +64,16 @@ before(async () => {
   process.env.MQTT_URL = `mqtt://localhost:${server.address().port}`;
   process.env.DATABASE_URL = DB;
   process.env.MQTT_CLIENT_ID = 'fpc-api-test';
+  process.env.NOTIFY_PROVIDER = 'log';
+  process.env.MANUAL_LATE_MINUTES = '0';
+  process.env.UPLOAD_DIR = mkdtempSync(join(tmpdir(), 'fpc-uploads-'));
 
   await import('../dist/db/seed.js'); // migrations + données de démo
   const { NestFactory } = await import('@nestjs/core');
   const { AppModule } = await import('../dist/app.module.js');
   app = await NestFactory.create(AppModule, { logger: false });
+  notifier = app.get((await import('../dist/notifier.service.js')).NotifierService);
+  commandsSvc = app.get((await import('../dist/commands.service.js')).CommandsService);
   await app.listen(0);
   base = await app.getUrl();
   base = base.replace('[::1]', 'localhost');
@@ -140,4 +148,118 @@ test('double validation : une autre personne doit valider', { skip }, async () =
   await until(async () => (await api(`/price-changes/${r.body.id}`)).body.commands[0].status === 'applied');
   await pool.query('update tenants set require_double_validation = false');
   await pool.end();
+});
+
+// ---------- Phase 0 : stations sans boîtier ----------
+
+const JPEG = new Blob([Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200)])], { type: 'image/jpeg' });
+
+async function stationId(code) {
+  return (await api('/stations')).body.find((s) => s.code === code).id;
+}
+async function manualChange(code, items, extra = {}) {
+  const before = notifier.recent.length;
+  const r = await api('/price-changes', { stationIds: [await stationId(code)], items, ...extra });
+  assert.equal(r.status, 201, JSON.stringify(r.body));
+  const msg = notifier.recent.slice(before).find((m) => m.body.includes(code));
+  assert.ok(msg, 'consigne envoyée au gérant');
+  const token = /\/m\/([A-Za-z0-9_-]+)/.exec(msg.body)[1];
+  return { pc: r.body, msg, token };
+}
+async function confirm(token, totem, pump, photos = true) {
+  const f = new FormData();
+  f.set('totem', JSON.stringify(totem));
+  f.set('pump', JSON.stringify(pump));
+  if (photos) { f.set('totemPhoto', JPEG, 't.jpg'); f.set('pumpPhoto', JPEG, 'p.jpg'); }
+  const r = await fetch(`${base}/m/${token}/confirm`, { method: 'POST', body: f });
+  return { status: r.status, body: await r.json() };
+}
+
+test('phase 0 : consigne au gérant, ouverture du lien, confirmation avec photos', { skip }, async () => {
+  const { pc, msg, token } = await manualChange('CI-BKE-004', [{ fuel: 'SP', price: 890 }, { fuel: 'GO', price: 725 }]);
+  assert.equal(msg.recipient, '+2250700000004');
+  assert.equal(pc.commands[0].channel, 'manual');
+
+  // Le jeton n'est jamais stocké en clair, même dans le journal des notifications.
+  const pool = new pg.Pool({ connectionString: DB });
+  const logged = (await pool.query('select body from notifications order by id desc limit 1')).rows[0].body;
+  await pool.end();
+  assert.ok(!logged.includes(token) && logged.includes('[lien masqué]'));
+
+  const opened = await fetch(`${base}/m/${token}`).then((r) => r.json());
+  assert.equal(opened.status, 'received');
+  assert.equal(opened.station.code, 'CI-BKE-004');
+  assert.equal((await fetch(`${base}/m/invalide-invalide-invalide`)).status, 404);
+
+  assert.equal((await confirm(token, { SP: 890, GO: 725 }, { SP: 890, GO: 725 }, false)).status, 400);
+  const ok = await confirm(token, { SP: 890, GO: 725 }, { SP: 890, GO: 725 });
+  assert.equal(ok.status, 201, JSON.stringify(ok.body));
+  assert.equal(ok.body.status, 'applied');
+  assert.equal((await confirm(token, { SP: 890, GO: 725 }, { SP: 890, GO: 725 })).status, 409);
+
+  const st = (await api('/stations')).body.find((s) => s.code === 'CI-BKE-004');
+  assert.deepEqual(st.prices, { SP: 890, GO: 725 });
+  const detail = (await api(`/price-changes/${pc.id}`)).body.commands[0];
+  assert.equal(detail.photos.length, 2);
+  const img = await fetch(`${base}/commands/${detail.cmd_id}/photos/${detail.photos[0].id}`, { headers: H() });
+  assert.equal(img.status, 200);
+  assert.equal(img.headers.get('content-type'), 'image/jpeg');
+  assert.equal((await fetch(`${base}/commands/${detail.cmd_id}/photos/${detail.photos[0].id}`)).status, 401);
+});
+
+test('phase 0 : écart entre totem et pompe signalé', { skip }, async () => {
+  const { token } = await manualChange('CI-YAM-002', [{ fuel: 'SP', price: 890 }]);
+  const r = await confirm(token, { SP: 890 }, { SP: 880 });
+  assert.equal(r.body.status, 'partially_applied');
+  const st = (await api('/stations')).body.find((s) => s.code === 'CI-YAM-002');
+  assert.equal(st.prices.SP, 890); // le totem est conforme
+  assert.ok((await api('/alerts')).body.some((a) => a.station_code === 'CI-YAM-002' && /pompe SP = 880/.test(a.message)));
+});
+
+test('phase 0 : confirmation trop tôt refusée, problème signalé, retard et rappel', { skip }, async () => {
+  const early = await manualChange('CI-SPE-007', [{ fuel: 'GO', price: 720 }], { applyAt: new Date(Date.now() + 3600e3).toISOString() });
+  assert.equal((await confirm(early.token, { GO: 720 }, { GO: 720 })).status, 409);
+
+  const late = await manualChange('CI-SPE-007', [{ fuel: 'GO', price: 721 }]);
+  const before = notifier.recent.length;
+  await commandsSvc.sweep();
+  assert.ok((await api('/alerts')).body.some((a) => a.kind === 'late' && a.station_code === 'CI-SPE-007'));
+  assert.ok(notifier.recent.slice(before).some((m) => m.body.startsWith('RAPPEL') && m.recipient === '+2250700000007'));
+
+  const pb = await fetch(`${base}/m/${late.token}/problem`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ comment: 'Télécommande du totem en panne' }),
+  }).then((r) => r.json());
+  assert.equal(pb.status, 'failed');
+  assert.ok((await api('/alerts')).body.some((a) => a.kind === 'failed' && /Télécommande/.test(a.message)));
+});
+
+test('grille officielle : double validation, prix non conformes bloqués, diffusion à toutes les stations', { skip }, async () => {
+  const items = [{ fuel: 'SP', price: 900 }, { fuel: 'GO', price: 730 }];
+  const effectiveAt = new Date(Date.now() - 60_000).toISOString();
+  const own = await api('/grids', { effectiveAt, items, reference: 'test auto-validation' }, 'dev-admin');
+  assert.equal((await api(`/grids/${own.body.id}/approve`, {}, 'dev-admin')).status, 403);
+
+  const g = await api('/grids', { effectiveAt, items, reference: 'Arrêté fictif n° 1' });
+  assert.equal(g.body.status, 'pending_approval');
+  assert.equal((await api(`/grids/${g.body.id}/dispatch`, {})).status, 409);
+  assert.equal((await api(`/grids/${g.body.id}/approve`, {}, 'dev-approver')).body.status, 'validated');
+
+  // Avec une grille en vigueur, un prix différent est bloqué même s'il est proche.
+  const off = await api('/price-changes', { items: [{ fuel: 'SP', price: 901 }] });
+  assert.equal(off.status, 422);
+  assert.match(off.body.message, /grille officielle/);
+
+  const before = (await api('/stations')).body;
+  assert.ok(before.every((s) => s.compliant === false));
+
+  const d = await api(`/grids/${g.body.id}/dispatch`, {});
+  assert.equal(d.status, 201, JSON.stringify(d.body));
+  assert.equal(d.body.commands.length, 5);
+  assert.deepEqual([...new Set(d.body.commands.map((c) => c.channel))].sort(), ['manual', 'mqtt']);
+  assert.equal((await api(`/grids/${g.body.id}/dispatch`, {})).status, 409);
+
+  await until(async () => (await api('/stations')).body.find((s) => s.code === 'CI-ABJ-012').compliant === true);
+  const st = (await api('/stations')).body.find((s) => s.code === 'CI-BKE-004');
+  assert.equal(st.compliant, false);
+  assert.deepEqual(st.compliance_issues, ['SP : 890 au lieu de 900', 'GO : 725 au lieu de 730']);
 });

@@ -1,5 +1,5 @@
 import {
-  BadRequestException, Body, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Post, Query,
+  BadRequestException, Body, Controller, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query,
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
 import { assertSegment, FUEL_CODE } from '@fpc/protocol';
@@ -33,41 +33,91 @@ export class StationsController {
   async list(@CurrentUser() u: User) {
     return (
       await this.db.query(
-        `select s.id, s.tenant_id, s.code, s.name, s.city, s.fuels, s.gateway_id,
+        `select s.id, s.tenant_id, s.code, s.name, s.city, s.fuels, s.gateway_id, s.mode, s.manager_name, s.manager_phone,
            coalesce(g.online, false) as online, g.last_seen_at,
            coalesce((select jsonb_object_agg(fuel, price) from station_prices p where p.station_id = s.id), '{}') as prices,
            (select max(updated_at) from station_prices p where p.station_id = s.id) as prices_updated_at,
-           (select count(*)::int from alerts a where a.station_id = s.id and a.resolved_at is null) as open_alerts
+           (select count(*)::int from alerts a where a.station_id = s.id and a.resolved_at is null) as open_alerts,
+           (select jsonb_build_object('reference', gr.reference, 'effective_at', gr.effective_at, 'items', gr.items)
+              from official_grids gr where gr.tenant_id = s.tenant_id and gr.status = 'validated' and gr.effective_at <= now()
+              order by gr.effective_at desc limit 1) as grid
          from stations s left join gateway_status g on g.gateway_id = s.gateway_id
          where ($1::text is null or s.tenant_id = $1) order by s.code`,
         [tenantScope(u)],
       )
-    ).rows;
+    ).rows.map(({ grid, ...s }) => {
+      // Conformité : prix confirmés en station = grille officielle en vigueur (null si pas de grille).
+      const issues = grid
+        ? (grid.items as { fuel: string; price: number }[])
+            .filter((g) => s.fuels.includes(g.fuel) && s.prices[g.fuel] !== g.price)
+            .map((g) => `${g.fuel} : ${s.prices[g.fuel] ?? '?'} au lieu de ${g.price}`)
+        : null;
+      return { ...s, compliant: issues ? issues.length === 0 : null, compliance_issues: issues ?? [] };
+    });
   }
 
-  /** Crée une station et son boîtier. La clé du boîtier n'est affichée qu'une fois. */
+  /**
+   * Crée une station. Mode « manual » (phase 0) : un numéro de gérant suffit.
+   * Mode « gateway » : la clé du boîtier est générée et n'est affichée qu'une fois.
+   */
   @Roles('admin')
   @Post()
-  async create(@CurrentUser() u: User, @Body() b: { code: string; name: string; city?: string; fuels: string[]; gatewayId: string; tenantId?: string }) {
+  async create(
+    @CurrentUser() u: User,
+    @Body() b: {
+      code: string; name: string; city?: string; fuels: string[]; mode?: 'gateway' | 'manual';
+      gatewayId?: string; managerName?: string; managerPhone?: string; tenantId?: string;
+    },
+  ) {
     const tenant = u.role === 'superadmin' ? b.tenantId : u.tenant;
-    if (!tenant || !b?.code || !b.name || !Array.isArray(b.fuels) || !b.fuels.every((f) => FUEL_CODE.test(f))) {
-      throw new BadRequestException('code, name, fuels[] et gatewayId requis');
+    const mode = b?.mode ?? 'manual';
+    if (!tenant || !b?.code || !b.name || !Array.isArray(b.fuels) || !b.fuels.length || !b.fuels.every((f) => FUEL_CODE.test(f))) {
+      throw new BadRequestException('code, name et fuels[] requis');
     }
-    try {
-      assertSegment('gatewayId', b.gatewayId);
-    } catch (e) {
-      throw new BadRequestException((e as Error).message);
+    if (mode !== 'manual' && mode !== 'gateway') throw new BadRequestException('mode : manual ou gateway');
+    const phone = normalizePhone(b.managerPhone);
+    let secret: string | null = null;
+    if (mode === 'gateway') {
+      try {
+        assertSegment('gatewayId', b.gatewayId ?? '');
+      } catch (e) {
+        throw new BadRequestException((e as Error).message);
+      }
+      secret = randomBytes(32).toString('hex');
     }
-    const secret = randomBytes(32).toString('hex');
     const r = await this.db.query(
-      `insert into stations(tenant_id, code, name, city, fuels, gateway_id, gateway_secret)
-       values ($1, $2, $3, $4, $5, $6, $7) returning id, code, gateway_id`,
-      [tenant, b.code, b.name, b.city ?? null, b.fuels, b.gatewayId, secret],
+      `insert into stations(tenant_id, code, name, city, fuels, mode, gateway_id, gateway_secret, manager_name, manager_phone)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning id, code, mode, gateway_id`,
+      [tenant, b.code, b.name, b.city ?? null, b.fuels, mode, mode === 'gateway' ? b.gatewayId : null, secret, b.managerName ?? null, phone],
     );
     await this.db.query('insert into audit_log(tenant_id, actor, action, details) values ($1, $2, $3, $4)', [
-      tenant, u.id, 'station.create', { code: b.code, gatewayId: b.gatewayId },
+      tenant, u.id, 'station.create', { code: b.code, mode, gatewayId: b.gatewayId },
     ]);
-    return { ...r.rows[0], gateway_secret: secret };
+    return secret ? { ...r.rows[0], gateway_secret: secret } : r.rows[0];
+  }
+
+  /** Coordonnées du gérant ; passage en mode manuel (repli si le boîtier est en panne). */
+  @Roles('admin')
+  @Patch(':id')
+  async update(
+    @CurrentUser() u: User,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() b: { managerName?: string | null; managerPhone?: string | null; mode?: 'gateway' | 'manual' },
+  ) {
+    const s = (await this.db.query('select * from stations where id = $1 and ($2::text is null or tenant_id = $2)', [id, tenantScope(u)])).rows[0];
+    if (!s) throw new NotFoundException();
+    if (b.mode && b.mode !== 'manual' && b.mode !== 'gateway') throw new BadRequestException('mode : manual ou gateway');
+    if (b.mode === 'gateway' && !s.gateway_id) throw new BadRequestException("Cette station n'a pas de boîtier");
+    const phone = b.managerPhone === undefined ? s.manager_phone : normalizePhone(b.managerPhone);
+    const r = await this.db.query(
+      `update stations set manager_name = $2, manager_phone = $3, mode = $4 where id = $1
+       returning id, code, mode, manager_name, manager_phone`,
+      [id, b.managerName === undefined ? s.manager_name : b.managerName, phone, b.mode ?? s.mode],
+    );
+    await this.db.query('insert into audit_log(tenant_id, actor, action, details) values ($1, $2, $3, $4)', [
+      s.tenant_id, u.id, 'station.update', { id, ...b },
+    ]);
+    return r.rows[0];
   }
 
   @Get(':id/commands')
@@ -82,6 +132,14 @@ export class StationsController {
       )
     ).rows;
   }
+}
+
+/** Numéro international (+225…) : chiffres seulement, avec indicatif. */
+function normalizePhone(p: string | null | undefined): string | null {
+  if (p === null || p === undefined || p === '') return null;
+  const n = p.replace(/[\s.-]/g, '');
+  if (!/^\+[1-9]\d{7,14}$/.test(n)) throw new BadRequestException('Téléphone au format international attendu, ex. +2250701020304');
+  return n;
 }
 
 @Controller('price-changes')

@@ -16,7 +16,8 @@ Page web (Next.js) ─HTTPS─► API (NestJS, PostgreSQL) ─MQTT/TLS─► Bo�
 | Protocole partagé | `packages/protocol` : messages, signature HMAC-SHA256, seuils 5 % / 15 %, contrôles de forme |
 | API cloud | `apps/api` : stations, récapitulatif, envoi signé, double validation, accusés, relances, alertes, audit |
 | Boîtier | `apps/gateway-sim` : logique complète du boîtier avec **totem et pompes simulés** et pannes injectables |
-| Interface web | `apps/web` : stations, saisie avec récapitulatif, suivi par station, alertes, historique |
+| Interface web | `apps/web` : stations, grille officielle, saisie avec récapitulatif, suivi par station avec photos, alertes, historique ; page mobile du gérant (`/m/<lien>`) |
+| **Phase 0 (sans boîtier)** | Consigne envoyée au gérant par SMS/WhatsApp avec un lien, confirmation par photos, retards et rappels, conformité à la grille : voir [`docs/phase-0.md`](docs/phase-0.md) |
 | Pilotes matériels réels | **Pas commencés** : dépendent des modèles relevés lors de la visite de station |
 | Comptes utilisateurs | **Provisoires** : jetons fixes, à remplacer avant tout pilote |
 
@@ -28,7 +29,7 @@ Prérequis : Node.js 22+, PostgreSQL 16 (ou Docker).
 npm install
 docker compose up -d postgres          # ou un PostgreSQL local avec une base « fuelprice »
 npm run build
-npm run seed -w @fpc/api               # client AFRIQUIA (démo) + 3 stations fictives
+npm run seed -w @fpc/api               # client AFRIQUIA (démo) : 2 stations avec boîtier, 3 en phase 0
 
 npm run broker                         # terminal 1 : broker MQTT de développement (port 1883)
 npm run api                            # terminal 2 : API sur http://localhost:4000
@@ -37,7 +38,7 @@ GW_ID=gw-0008 GW_SECRET=dev-secret-gw-0008 SIM_DEAD_PUMPS=pump-2 npm run sim   #
 npm run web                            # terminal 5 : interface sur http://localhost:3000
 ```
 
-Le troisième boîtier (`gw-0009`) n'est pas démarré : il apparaît hors ligne, ses commandes restent « Envoyé » puis sont relancées et livrées dès qu'il se connecte.
+Pour essayer la phase 0 : saisissez une grille officielle (jeton Opérateur), validez-la (jeton Valideur), diffusez-la, puis ouvrez le lien du gérant affiché dans la console de l'API (`→ +2250700000004 : … http://localhost:3000/m/…`) depuis un téléphone ou un navigateur.
 
 Pannes simulables sur le boîtier : `SIM_DEAD_PUMPS=pump-2`, `SIM_TOTEM_MUTE_COUNT=1` (totem muet au premier essai), `SIM_TOTEM_READ_MISMATCH=1`. Couper puis relancer le simulateur reproduit une coupure : les commandes en file sont reprises au démarrage (fichier `apps/gateway-sim/data/`).
 
@@ -53,10 +54,14 @@ Jetons de développement (en-tête `Authorization: Bearer …`) : `dev-operator`
 | POST | `/price-changes/preview` | récapitulatif et niveaux de variation |
 | POST | `/price-changes` | `{stationIds \| "all", items:[{fuel, price}], applyAt?, confirm?, comment?}` |
 | POST | `/price-changes/:id/approve` · `/cancel` | double validation |
+| GET/POST | `/grids`, `/grids/:id/approve` · `/cancel` · `/dispatch` | grille officielle |
+| PATCH | `/stations/:id` | gérant, passage en mode manuel |
+| GET | `/m/:lien` ; POST `/m/:lien/confirm` (photos) · `/problem` | pages publiques du gérant |
+| GET | `/commands/:cmdId/photos/:id` | photos de confirmation |
 | GET | `/price-changes`, `/price-changes/:id`, `/stations/:id/commands`, `/commands/:cmdId` | suivi |
 | GET/POST | `/alerts`, `/alerts/:id/resolve` | alertes |
 
-Réponses : `422` variation > 15 % ou prix hors bornes ; `409` variation > 5 % sans `confirm: true`.
+Réponses : `422` prix différent de la grille en vigueur, variation > 15 % (sans grille) ou prix hors bornes ; `409` variation > 5 % sans `confirm: true`.
 
 ## Tests
 

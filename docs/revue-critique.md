@@ -61,9 +61,10 @@ La grille de choix du plan est matérielle. Ajouter : **Linux ouvert avec possib
 | Comptes et connexion | Jetons fixes dans une variable d'environnement | Vrais comptes, mots de passe hachés ou SSO, MFA pour valider, expiration de session |
 | Clés des boîtiers | En clair dans la base | Ed25519 + coffre-fort de clés (point 5), rotation, révocation |
 | Relances | Minuterie dans le processus de l'API | File Redis (BullMQ) ou verrou si plusieurs instances, comme prévu au plan |
+| Phase 0 | **Faite** (voir [phase-0.md](phase-0.md)) | Choisir le fournisseur SMS/WhatsApp ; stockage des photos |
 | Application partielle | Alerte seulement | Bouton « relancer cette station » (nouvelle commande) et escalade vers une intervention |
-| Grille officielle | Absente | Point 4 |
-| Notifications | Dans l'interface seulement | SMS / courriel / WhatsApp pour les alertes et la phase 0 |
+| Grille officielle | **Faite** : validation à deux, blocage des prix hors grille, conformité par station | Dérogation tracée (cas exceptionnels) |
+| Notifications | Consignes et rappels aux gérants (console ou webhook) | Alertes du siège par SMS / courriel |
 | Pilotes matériels | Totem et pompes simulés | Un pilote par modèle de contrôleur ou de totem, après la visite |
 | Ordre totem / pompes | Totem puis pompes | Rendre configurable, contrôleur d'abord par défaut (point 3) |
 | Validation des entrées | Manuelle dans les services | Bibliothèque de validation et documentation OpenAPI |
