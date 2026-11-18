@@ -1,0 +1,17 @@
+# Environnement de développement : PostgreSQL, Redis (prévu pour les files de relance) et Mosquitto.
+# Alternative sans Docker : PostgreSQL local et `npm run broker` (broker MQTT en Node).
+services:
+  postgres:
+    image: postgres:16
+    environment: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: fuelprice }
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports: ["1883:1883"]
+    volumes: ["./infra/mosquitto.dev.conf:/mosquitto/config/mosquitto.conf:ro"]
+volumes:
+  pgdata:
