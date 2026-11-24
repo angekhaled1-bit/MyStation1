@@ -8,6 +8,7 @@
 | [dossier-boitier.html](dossier-boitier.html) | Boîtier de station : composants, câblage, flux, Gilbarco/Wayne, totem, emplacement, risques (ouvrir dans un navigateur) |
 | [animation-changement-prix.html](animation-changement-prix.html) | Animation pas à pas d un changement de prix, du siège à la pompe |
 | [animation-station.html](animation-station.html) | Animation illustrée : du bureau du siège à la pompe et au totem |
+| [animation-3d.html](animation-3d.html) | Film 3D interactif du changement de prix |
 | [phase-0.md](phase-0.md) | Phase 0 : consigne au gérant, confirmation par photos, grille officielle |
 | [protocole-boitier.md](protocole-boitier.md) | Protocole MQTT cloud ↔ boîtier tel qu'implémenté |
 | [revue-critique.md](revue-critique.md) | Points faibles des documents, recommandations, limites du code actuel |
