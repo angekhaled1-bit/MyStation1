@@ -1,0 +1,378 @@
+<title>Du bureau à la pompe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@600;700&display=swap">
+<style>
+/* Mise en page : un « dessin animé » en une colonne pour téléphone. La caméra se déplace dans une grande illustration (bureau, antenne, station). Thème clair unique, choisi pour une scène de jour : toutes les couleurs sont fixées. */
+:root{
+  --bg:#eef2f6; --panel:#ffffff; --line:#d3dae3; --fg:#152033; --fg2:#566479; --blue:#1f4fc0; --green:#1d8f5f; --amber:#f2a516;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:620px;margin:0 auto;padding-block:14px 36px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px}
+h1{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.1;margin:0}
+.sub{color:var(--fg2);font-size:13.5px;margin:3px 0 0}
+.stage{border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#bfe3fb;box-shadow:0 6px 20px rgba(20,40,80,.12)}
+svg{display:block;width:100%;height:auto}
+.cap{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:112px;display:flex;flex-direction:column;gap:4px}
+.cap .n{font-family:var(--mono);font-size:12px;color:var(--blue)}
+.cap h2{font-family:var(--display);font-size:23px;font-weight:700;margin:0;line-height:1.15}
+.cap p{margin:0;color:var(--fg2);font-size:14.5px}
+.ctrl{display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:8px}
+button{font:inherit;font-weight:600;font-size:15px;height:48px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer}
+button.main{background:var(--blue);border-color:var(--blue);color:#fff}
+button:disabled{opacity:.4}
+button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.foot{font-size:12.5px;color:var(--fg2)}
+/* illustration */
+.lbl{font-family:var(--body);font-weight:700;fill:#152033}
+.lblw{font-family:var(--body);font-weight:700;fill:#ffffff}
+.scr{font-family:var(--body);fill:#152033}
+.lcd{font-family:var(--mono);font-weight:700;fill:#1b2512}
+.led{font-family:var(--mono);font-weight:700;fill:#ffb21a}
+.tag{font-family:var(--body);font-weight:700;font-size:9px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Du bureau à la pompe</h1>
+    <p class="sub">Un agent saisit les nouveaux prix sur son ordinateur. Le message voyage jusqu'au boîtier de la station, qui change le prix des pompes puis du totem. Prix fictifs : Super 905 → 915, Gasoil 725 → 730 FCFA/L.</p>
+  </header>
+
+  <div class="stage">
+    <svg id="svg" viewBox="0 0 400 300" role="img" aria-labelledby="ttl">
+      <title id="ttl">Illustration animée : un agent au bureau, une antenne relais, puis une station-service avec canopée bleue, deux pompes, un totem de prix et un local technique contenant le boîtier.</title>
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fcdf6"/><stop offset="1" stop-color="#dff2fd"/></linearGradient>
+        <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3efe6"/><stop offset="1" stop-color="#e5dfd2"/></linearGradient>
+        <linearGradient id="blueP" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1a43ad"/><stop offset=".5" stop-color="#2557d6"/><stop offset="1" stop-color="#1a43ad"/></linearGradient>
+        <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bf7a50"/><stop offset="1" stop-color="#a66440"/></linearGradient>
+        <linearGradient id="swoosh" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36b24a"/><stop offset=".5" stop-color="#f4b521"/><stop offset="1" stop-color="#e8553a"/></linearGradient>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect x="0" y="0" width="400" height="300" fill="url(#sky)"/>
+      <g id="world">
+        <!-- ============ CIEL ET SOL GÉNÉRAUX ============ -->
+        <rect x="440" y="0" width="1200" height="470" fill="url(#sky)"/>
+        <g fill="#ffffff" opacity=".9">
+          <ellipse cx="560" cy="90" rx="46" ry="16"/><ellipse cx="590" cy="80" rx="30" ry="14"/>
+          <ellipse cx="900" cy="60" rx="54" ry="16"/><ellipse cx="935" cy="52" rx="30" ry="14"/>
+          <ellipse cx="1290" cy="70" rx="60" ry="18"/><ellipse cx="1330" cy="60" rx="34" ry="15"/>
+        </g>
+        <!-- ville -->
+        <g fill="#9fb3c8">
+          <rect x="460" y="360" width="40" height="110"/><rect x="505" y="320" width="34" height="150"/><rect x="545" y="380" width="50" height="90"/>
+          <rect x="600" y="340" width="30" height="130"/><rect x="780" y="370" width="46" height="100"/><rect x="832" y="330" width="36" height="140"/>
+          <rect x="874" y="390" width="56" height="80"/><rect x="936" y="355" width="30" height="115"/>
+        </g>
+        <g fill="#c4d3e2">
+          <rect x="482" y="395" width="30" height="75"/><rect x="565" y="405" width="38" height="65"/><rect x="810" y="400" width="40" height="70"/><rect x="900" y="410" width="40" height="60"/>
+        </g>
+        <!-- sol -->
+        <rect x="440" y="470" width="1200" height="130" fill="#6f9b4a"/>
+        <rect x="980" y="470" width="660" height="130" fill="url(#ground)"/>
+        <rect x="440" y="548" width="1200" height="52" fill="#4a4f57"/>
+        <g stroke="#e9e6df" stroke-width="4" stroke-dasharray="26 22"><line x1="440" y1="574" x2="1640" y2="574"/></g>
+
+        <!-- ============ BUREAU (coupe) ============ -->
+        <rect x="0" y="0" width="440" height="470" fill="url(#wall)"/>
+        <rect x="0" y="470" width="440" height="130" fill="#b8936b"/>
+        <g stroke="#a7825b" stroke-width="2"><line x1="0" y1="500" x2="440" y2="500"/><line x1="0" y1="535" x2="440" y2="535"/></g>
+        <rect x="430" y="0" width="14" height="600" fill="#cfc6b5"/>
+        <!-- fenêtre -->
+        <rect x="300" y="50" width="118" height="104" rx="4" fill="#ffffff"/>
+        <rect x="306" y="56" width="106" height="92" fill="#a8dbf8"/>
+        <ellipse cx="350" cy="96" rx="22" ry="8" fill="#ffffff"/>
+        <line x1="359" y1="56" x2="359" y2="148" stroke="#ffffff" stroke-width="4"/>
+        <!-- horloge et tableau -->
+        <circle cx="70" cy="90" r="22" fill="#ffffff" stroke="#5b6675" stroke-width="3"/>
+        <line x1="70" y1="90" x2="70" y2="76" stroke="#152033" stroke-width="2.5"/><line x1="70" y1="90" x2="80" y2="94" stroke="#152033" stroke-width="2"/>
+        <rect x="120" y="70" width="130" height="80" rx="3" fill="#ffffff" stroke="#c9c2b2"/>
+        <text x="132" y="96" class="lbl" font-size="12">PRIX OFFICIELS</text>
+        <text x="132" y="116" class="scr" font-size="11">Décembre</text>
+        <rect x="132" y="124" width="70" height="6" rx="3" fill="#d6dde8"/><rect x="132" y="135" width="50" height="6" rx="3" fill="#d6dde8"/>
+        <!-- chaise -->
+        <rect x="92" y="300" width="14" height="110" rx="5" fill="#2b3240"/>
+        <rect x="92" y="398" width="76" height="14" rx="5" fill="#2b3240"/>
+        <rect x="126" y="412" width="8" height="48" fill="#3a4252"/>
+        <rect x="100" y="458" width="60" height="7" rx="3" fill="#3a4252"/>
+        <!-- homme -->
+        <g id="man">
+          <path d="M120 400 L168 400 L210 404 L212 462 L200 462 L196 418 L130 416 Z" fill="#2c3646"/>
+          <rect x="196" y="455" width="24" height="9" rx="4" fill="#1a1f29"/>
+          <path d="M114 318 Q116 296 142 292 L160 292 Q178 296 180 320 L182 402 L118 402 Z" fill="#2f6db5"/>
+          <path d="M140 292 L150 306 L160 292 Z" fill="#ffffff"/>
+          <rect x="142" y="278" width="14" height="16" fill="#6b3f22"/>
+          <ellipse cx="150" cy="260" rx="21" ry="23" fill="#7a4a2b"/>
+          <path d="M129 254 Q130 234 150 234 Q172 234 172 254 Q164 244 150 244 Q136 244 129 254 Z" fill="#1d1712"/>
+          <circle cx="160" cy="258" r="2.2" fill="#1d1712"/>
+          <path d="M166 268 Q170 270 168 272" stroke="#4a2a16" stroke-width="1.6" fill="none"/>
+          <g id="arm">
+            <path d="M170 304 Q196 330 214 360" stroke="#2f6db5" stroke-width="16" stroke-linecap="round" fill="none"/>
+            <circle cx="218" cy="366" r="8" fill="#7a4a2b"/>
+          </g>
+        </g>
+        <!-- bureau -->
+        <rect x="170" y="378" width="260" height="14" rx="3" fill="#8a5a3c"/>
+        <rect x="180" y="392" width="10" height="78" fill="#7a4e33"/><rect x="410" y="392" width="10" height="78" fill="#7a4e33"/>
+        <rect x="206" y="368" width="96" height="10" rx="2" fill="#9aa3af"/>
+        <g fill="#c8ced6"><rect x="210" y="370" width="88" height="2"/><rect x="210" y="374" width="88" height="2"/></g>
+        <rect x="320" y="370" width="16" height="9" rx="4" fill="#9aa3af"/>
+        <!-- écran -->
+        <rect x="280" y="342" width="14" height="36" fill="#5b6675"/><rect x="258" y="374" width="58" height="6" rx="2" fill="#5b6675"/>
+        <rect x="188" y="198" width="204" height="146" rx="8" fill="#1d2430"/>
+        <rect x="196" y="206" width="188" height="130" rx="3" fill="#f6f8fc"/>
+        <rect x="196" y="206" width="188" height="20" fill="#1f4fc0"/>
+        <text x="204" y="220" class="lblw" font-size="11">FuelPrice · Siège</text>
+        <g id="form">
+          <text x="204" y="242" class="lbl" font-size="12">Nouveaux prix (FCFA/L)</text>
+          <text x="204" y="264" class="scr" font-size="12">Super</text>
+          <rect x="268" y="251" width="100" height="19" rx="3" fill="#ffffff" stroke="#9fb0c6"/>
+          <text id="fsp" x="276" y="265" class="scr" font-size="12" font-weight="700"></text>
+          <text x="204" y="290" class="scr" font-size="12">Gasoil</text>
+          <rect x="268" y="277" width="100" height="19" rx="3" fill="#ffffff" stroke="#9fb0c6"/>
+          <text id="fgo" x="276" y="291" class="scr" font-size="12" font-weight="700"></text>
+          <rect id="btn" x="268" y="304" width="100" height="22" rx="4" fill="#1f4fc0"/>
+          <text id="btnt" x="318" y="319" text-anchor="middle" class="lblw" font-size="12">Envoyer</text>
+          <text id="scrst" x="204" y="334" class="scr" font-size="8.5" fill="#566479"></text>
+        </g>
+        <g id="result" opacity="0">
+          <circle cx="290" cy="262" r="20" fill="#1d8f5f"/>
+          <path d="M280 262 L288 270 L301 254" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <text x="290" y="300" text-anchor="middle" class="lbl" font-size="12">Station Plateau</text>
+          <text x="290" y="318" text-anchor="middle" class="scr" font-size="11">Prix appliqués : 915 / 730</text>
+        </g>
+        <path id="cursor" d="M0 0 L0 16 L4 12 L7 19 L10 18 L7 11 L12 11 Z" fill="#152033" stroke="#fff" stroke-width="1" transform="translate(350 352)" opacity="0"/>
+
+        <!-- ============ ANTENNE RELAIS ============ -->
+        <g stroke="#7d8794" stroke-width="3" fill="none">
+          <line x1="696" y1="470" x2="712" y2="178"/><line x1="744" y1="470" x2="728" y2="178"/>
+          <path d="M699 420 L741 380 L702 340 L738 300 L705 262 L735 226 L708 196"/>
+          <path d="M741 420 L699 380 L738 340 L702 300 L735 262 L705 226 L732 196"/>
+        </g>
+        <rect x="704" y="166" width="32" height="14" fill="#7d8794"/>
+        <rect x="700" y="146" width="8" height="26" rx="2" fill="#e8ecf1" stroke="#7d8794"/><rect x="732" y="146" width="8" height="26" rx="2" fill="#e8ecf1" stroke="#7d8794"/>
+        <circle cx="720" cy="140" r="4" fill="#e8553a"/>
+        <g id="waves" opacity="0" fill="none" stroke="#1f4fc0" stroke-width="3" stroke-linecap="round">
+          <path d="M752 140 Q764 158 752 176"/><path d="M764 130 Q782 158 764 186"/>
+          <path d="M688 140 Q676 158 688 176"/><path d="M676 130 Q658 158 676 186"/>
+        </g>
+        <text x="682" y="500" class="lbl" font-size="14" fill="#ffffff">Antenne 4G</text>
+
+        <!-- ============ STATION ============ -->
+        <!-- local technique -->
+        <rect x="992" y="334" width="140" height="136" fill="#f4f1ea"/>
+        <rect x="984" y="322" width="156" height="16" fill="#1f4fc0"/>
+        <rect x="1094" y="300" width="4" height="24" fill="#5b6675"/><rect x="1088" y="296" width="16" height="6" rx="2" fill="#5b6675"/>
+        <rect x="1000" y="352" width="82" height="96" rx="3" fill="#dfe6ee" stroke="#b8c2ce" stroke-width="2"/>
+        <text x="1004" y="346" class="lbl" font-size="8.5">LOCAL TECHNIQUE</text>
+        <rect x="1094" y="380" width="30" height="90" fill="#8aa0b8"/><circle cx="1118" cy="426" r="2" fill="#2b3240"/>
+        <!-- boîtier -->
+        <g id="box">
+          <rect x="1016" y="366" width="50" height="60" rx="4" fill="#2f3b4d" stroke="#1a2230" stroke-width="2"/>
+          <rect x="1022" y="372" width="38" height="14" rx="2" fill="#1d8f5f"/>
+          <text x="1041" y="382" text-anchor="middle" class="lblw" font-size="7.5">BOÎTIER</text>
+          <circle id="led1" cx="1026" cy="396" r="2.6" fill="#3a4659"/><circle id="led2" cx="1034" cy="396" r="2.6" fill="#3a4659"/><circle id="led3" cx="1042" cy="396" r="2.6" fill="#3a4659"/>
+          <rect x="1022" y="404" width="38" height="16" rx="2" fill="#1a2230"/>
+          <line x1="1041" y1="426" x2="1041" y2="470" stroke="#2b3240" stroke-width="3"/>
+        </g>
+        <g id="checks" opacity="0">
+          <rect x="1072" y="340" width="58" height="56" rx="6" fill="#ffffff" stroke="#1d8f5f" stroke-width="1.5"/>
+          <text id="ck1" x="1077" y="353" class="scr" font-size="7.5">· vient du siège</text>
+          <text id="ck2" x="1077" y="366" class="scr" font-size="7.5">· bonne station</text>
+          <text id="ck3" x="1077" y="379" class="scr" font-size="7.5">· prix corrects</text>
+          <text id="ck4" x="1077" y="392" class="scr" font-size="7.5">· pas en double</text>
+        </g>
+        <!-- câbles sous le sol -->
+        <g fill="none" stroke-width="3" stroke-dasharray="6 5">
+          <path id="cab1" d="M1041 470 V512 H1243 V470" stroke="#7a5236"/>
+          <path id="cab2" d="M1243 512 H1371 V470" stroke="#7a5236"/>
+          <path id="cab3" d="M1371 512 H1532 V470" stroke="#7a5236"/>
+        </g>
+        <text x="1060" y="530" class="lbl" font-size="9" fill="#fff">câble sous la dalle</text>
+        <!-- dalle -->
+        <rect x="1150" y="462" width="300" height="12" rx="3" fill="#c9c6bf"/>
+        <!-- canopée -->
+        <rect x="1140" y="184" width="330" height="20" rx="4" fill="#f7f7f5"/>
+        <rect x="1140" y="198" width="330" height="10" fill="#1f4fc0"/>
+        <!-- portiques -->
+        <g fill="url(#blueP)">
+          <rect x="1172" y="208" width="18" height="256"/><rect x="1294" y="208" width="18" height="256"/>
+          <rect x="1172" y="208" width="140" height="34"/>
+          <rect x="1316" y="208" width="18" height="256"/><rect x="1418" y="208" width="18" height="256"/>
+          <rect x="1316" y="208" width="120" height="34"/>
+        </g>
+        <path d="M1190 286 Q1240 272 1294 286 L1294 298 Q1240 284 1190 298 Z" fill="#1f4fc0"/>
+        <path d="M1334 286 Q1376 272 1418 286 L1418 298 Q1376 284 1334 298 Z" fill="#1f4fc0"/>
+        <text x="1242" y="230" text-anchor="middle" class="lblw" font-size="12">CARBURANTS</text>
+        <text x="1376" y="230" text-anchor="middle" class="lblw" font-size="12">CARBURANTS</text>
+        <!-- pompe 1 : type Gilbarco -->
+        <g id="pump1">
+          <path d="M1208 392 Q1196 420 1206 452" stroke="#1a1f29" stroke-width="3" fill="none"/>
+          <path d="M1278 392 Q1290 420 1280 452" stroke="#1a1f29" stroke-width="3" fill="none"/>
+          <rect x="1210" y="340" width="66" height="124" rx="3" fill="#2453c9"/>
+          <rect x="1213" y="344" width="60" height="54" rx="2" fill="#1b1f26"/>
+          <text x="1243" y="353" text-anchor="middle" font-size="5" fill="#c9ced6" font-family="Public Sans">PRIX UNITAIRE</text>
+          <rect x="1216" y="356" width="26" height="16" rx="1.5" fill="#b9c8a0"/>
+          <rect x="1244" y="356" width="26" height="16" rx="1.5" fill="#b9c8a0"/>
+          <text id="p1sp" x="1229" y="368" text-anchor="middle" class="lcd" font-size="10">905</text>
+          <text id="p1go" x="1257" y="368" text-anchor="middle" class="lcd" font-size="10">725</text>
+          <rect x="1216" y="376" width="26" height="7" rx="1" fill="#46534a"/><rect x="1244" y="376" width="26" height="7" rx="1" fill="#46534a"/>
+          <rect x="1217" y="387" width="24" height="8" rx="1" fill="#1f9d4b"/><text x="1229" y="393" text-anchor="middle" class="tag" font-size="5" textLength="19" lengthAdjust="spacingAndGlyphs" fill="#fff">SUPER</text>
+          <rect x="1245" y="387" width="24" height="8" rx="1" fill="#f1c40f"/><text x="1257" y="393" text-anchor="middle" class="tag" font-size="5" textLength="20" lengthAdjust="spacingAndGlyphs" fill="#1b1f26">GASOIL</text>
+          <circle cx="1243" cy="430" r="11" fill="none" stroke="url(#swoosh)" stroke-width="4"/>
+          <rect x="1202" y="396" width="8" height="18" rx="2" fill="#1f9d4b"/><rect x="1276" y="396" width="8" height="18" rx="2" fill="#f1c40f"/>
+          <text x="1243" y="482" text-anchor="middle" class="lbl" font-size="9" fill="#fff">Pompe Gilbarco</text>
+        </g>
+        <!-- pompe 2 : type Wayne -->
+        <g id="pump2">
+          <rect x="1346" y="330" width="52" height="34" rx="3" fill="#a9b1ba"/>
+          <rect x="1351" y="335" width="42" height="24" rx="2" fill="#c3cdb8"/>
+          <text x="1355" y="345" class="lcd" font-size="7">SP</text><text id="p2sp" x="1390" y="345" text-anchor="end" class="lcd" font-size="8.5">905</text>
+          <text x="1355" y="356" class="lcd" font-size="7">GO</text><text id="p2go" x="1390" y="356" text-anchor="end" class="lcd" font-size="8.5">725</text>
+          <rect x="1346" y="364" width="52" height="54" fill="#2b3038"/>
+          <rect x="1388" y="366" width="7" height="48" fill="#ef7d22"/>
+          <rect x="1346" y="418" width="52" height="46" fill="#2453c9"/>
+          <circle cx="1372" cy="441" r="10" fill="none" stroke="url(#swoosh)" stroke-width="4"/>
+          <path d="M1348 376 Q1336 410 1346 440" stroke="#1a1f29" stroke-width="3" fill="none"/>
+          <text x="1372" y="482" text-anchor="middle" class="lbl" font-size="9" fill="#fff">Pompe Wayne</text>
+        </g>
+        <!-- totem -->
+        <g id="totem">
+          <rect x="1504" y="222" width="56" height="248" rx="6" fill="#1f4fc0"/>
+          <path d="M1504 228 Q1504 222 1510 222 L1554 222 Q1560 222 1560 228 L1560 238 Q1532 228 1504 240 Z" fill="#36b24a"/>
+          <circle cx="1532" cy="268" r="17" fill="none" stroke="url(#swoosh)" stroke-width="7"/>
+          <rect x="1509" y="304" width="46" height="78" rx="3" fill="#0b0d12"/>
+          <text x="1513" y="315" font-size="5.5" fill="#c9ced6" font-family="Public Sans" font-weight="700">SANS PLOMB</text>
+          <text id="tsp" x="1550" y="336" text-anchor="end" class="led" font-size="15" filter="url(#glow)">905</text>
+          <text x="1513" y="350" font-size="5.5" fill="#c9ced6" font-family="Public Sans" font-weight="700">GASOIL</text>
+          <text id="tgo" x="1550" y="372" text-anchor="end" class="led" font-size="15" filter="url(#glow)">725</text>
+          <rect x="1509" y="390" width="46" height="20" rx="2" fill="#ffffff"/><text x="1532" y="403" text-anchor="middle" class="lbl" font-size="6.5">OUVERT 24/7</text>
+          <text x="1532" y="486" text-anchor="middle" class="lbl" font-size="9" fill="#fff">Totem</text>
+        </g>
+        <!-- voiture (taxi) -->
+        <g id="car">
+          <path d="M1108 448 L1114 430 Q1118 422 1128 421 L1170 421 Q1180 422 1186 432 L1196 448 Z" fill="#f2c318"/>
+          <rect x="1100" y="444" width="102" height="18" rx="6" fill="#f2c318"/>
+          <path d="M1122 432 L1126 425 L1148 425 L1148 438 L1120 438 Z" fill="#9fd0ee"/><path d="M1152 425 L1172 425 L1182 438 L1152 438 Z" fill="#9fd0ee"/>
+          <circle cx="1122" cy="463" r="9" fill="#1a1f29"/><circle cx="1122" cy="463" r="4" fill="#8a919b"/>
+          <circle cx="1180" cy="463" r="9" fill="#1a1f29"/><circle cx="1180" cy="463" r="4" fill="#8a919b"/>
+          <rect x="1140" y="450" width="30" height="3" fill="#1a1f29"/>
+        </g>
+        <path id="hose" d="M1206 412 Q1198 440 1196 448" stroke="#1a1f29" stroke-width="3" fill="none"/>
+        <g id="fillbadge" opacity="0">
+          <rect x="1106" y="398" width="72" height="18" rx="9" fill="#ffffff" stroke="#f2a516" stroke-width="1.5"/>
+          <text id="fillt" x="1142" y="410" text-anchor="middle" class="scr" font-size="8" font-weight="700">Plein en cours…</text>
+        </g>
+
+        <!-- message -->
+        <g id="env" opacity="0">
+          <rect x="-16" y="-11" width="32" height="22" rx="3" fill="#ffffff" stroke="#1f4fc0" stroke-width="2"/>
+          <path d="M-16 -9 L0 3 L16 -9" fill="none" stroke="#1f4fc0" stroke-width="2"/>
+          <circle cx="12" cy="9" r="6" fill="#f2a516"/><rect x="9" y="8" width="6" height="5" rx="1" fill="#152033"/><path d="M10 8 V6 Q12 3 14 6 V8" stroke="#152033" stroke-width="1.2" fill="none"/>
+        </g>
+        <!-- chemins -->
+        <path id="route" d="M290 270 Q340 170 360 110 Q420 40 520 80 Q640 120 720 140 Q880 170 1000 240 Q1060 280 1096 300 L1041 370" fill="none"/>
+        <path id="back" d="M1041 370 L1096 300 Q1060 280 1000 240 Q880 170 720 140 Q640 120 520 80 Q420 40 360 110 Q340 170 290 270" fill="none"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="cap" aria-live="polite">
+    <div class="n" id="capn"></div>
+    <h2 id="capt"></h2>
+    <p id="capp"></p>
+  </div>
+  <div class="ctrl">
+    <button id="prev">◀ Préc.</button>
+    <button id="play" class="main">▶ Lecture</button>
+    <button id="next">Suiv. ▶</button>
+  </div>
+  <p class="foot">Illustration de principe, sans logo de marque. La station, les noms et les prix sont fictifs. Le changement peut aussi être programmé à l'avance, par exemple pour minuit. Les modèles de contrôleur et le comportement exact des pompes restent à confirmer avec les fabricants.</p>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const world=$('world');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let token=0,cur=0,playing=false,cam={x:260,y:300,z:1.05};
+function setCam(c){cam={...c};world.setAttribute('transform',`translate(${200-c.x*c.z} ${150-c.y*c.z}) scale(${c.z})`)}
+const ease=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+function sleep(ms,tk){return new Promise((res,rej)=>setTimeout(()=>tk===token?res():rej('stop'),reduce?Math.min(ms,200):ms))}
+function tween(ms,tk,fn){return new Promise((res,rej)=>{const t0=performance.now(),d=reduce?1:ms;
+  function f(t){if(tk!==token)return rej('stop');const k=Math.min(1,(t-t0)/d);fn(ease(k));if(k<1)requestAnimationFrame(f);else res()}requestAnimationFrame(f)})}
+function camTo(to,ms,tk){const a={...cam};return tween(ms,tk,k=>setCam({x:a.x+(to.x-a.x)*k,y:a.y+(to.y-a.y)*k,z:a.z+(to.z-a.z)*k}))}
+function fly(pathId,color,ms,tk,follow){
+  const p=$(pathId),L=p.getTotalLength(),e=$('env');e.querySelector('rect').setAttribute('stroke',color);e.querySelectorAll('path')[0].setAttribute('stroke',color);e.setAttribute('opacity',1);
+  const z0=cam.z;
+  return tween(ms,tk,k=>{const pt=p.getPointAtLength(k*L);e.setAttribute('transform',`translate(${pt.x} ${pt.y})`);
+    if(follow){const zz=follow.z+(z0-follow.z)*Math.max(0,1-k*4);setCam({x:pt.x,y:Math.min(380,Math.max(200,pt.y+40)),z:k>.9?follow.z:zz})}
+  }).then(()=>e.setAttribute('opacity',0));
+}
+const T=(id,v)=>{$(id).textContent=v};
+function roll(id,from,to,ms,tk){return tween(ms,tk,k=>T(id,Math.round(from+(to-from)*k)))}
+let armTimer=null;
+function typing(on){clearInterval(armTimer);$('arm').setAttribute('transform','');if(on&&!reduce){let u=0;armTimer=setInterval(()=>{u^=1;$('arm').setAttribute('transform',u?'translate(0 -4)':'')},140)}}
+function cable(id,state){const c=$(id);if(state==='on'){c.setAttribute('stroke','#f2a516');c.setAttribute('stroke-width','4')}else if(state==='ok'){c.setAttribute('stroke','#1d8f5f');c.setAttribute('stroke-width','4')}else{c.setAttribute('stroke','#7a5236');c.setAttribute('stroke-width','3')}}
+let dash=0;(function anim(){dash=(dash+0.6)%22;['cab1','cab2','cab3'].forEach(i=>$(i).setAttribute('stroke-dashoffset',-dash));requestAnimationFrame(anim)})();
+function leds(on){['led1','led2','led3'].forEach((l,i)=>$(l).setAttribute('fill',on?['#36d17a','#5aa2ff','#f2a516'][i]:'#3a4659'))}
+
+function reset(){
+  typing(false);T('fsp','');T('fgo','');T('scrst','');T('btnt','Envoyer');$('btn').setAttribute('fill','#1f4fc0');
+  $('form').setAttribute('opacity',1);$('result').setAttribute('opacity',0);$('cursor').setAttribute('opacity',0);$('arm').setAttribute('transform','');
+  $('env').setAttribute('opacity',0);$('waves').setAttribute('opacity',0);$('checks').setAttribute('opacity',0);leds(false);
+  ['ck1','ck2','ck3','ck4'].forEach(c=>{const e=$(c);e.textContent=e.textContent.replace('✓','·');e.setAttribute('fill','#152033')});
+  ['cab1','cab2','cab3'].forEach(c=>cable(c,null));
+  T('p1sp',905);T('p1go',725);T('p2sp',905);T('p2go',725);T('tsp',905);T('tgo',725);
+  $('car').setAttribute('transform','');$('car').setAttribute('opacity',1);$('hose').setAttribute('opacity',1);$('fillbadge').setAttribute('opacity',0);T('fillt','Plein en cours…');
+  setCam({x:260,y:300,z:1.05});
+}
+const OFFICE={x:262,y:296,z:1.05},BOX={x:1068,y:384,z:2.3},STATION={x:1300,y:372,z:.7},P1={x:1210,y:410,z:1.55},P2={x:1372,y:392,z:2.1},TOT={x:1532,y:340,z:1.8};
+
+const STEPS=[
+ {t:"L'agent saisit les nouveaux prix",p:"Au siège, l'agent ouvre l'application FuelPrice et tape les prix fixés par l'État : Super 915 et Gasoil 730 francs le litre.",
+  run:async tk=>{setCam(OFFICE);await sleep(500,tk);typing(true);for(const d of '915'){$('fsp').textContent+=d;await sleep(320,tk)}await sleep(250,tk);for(const d of '730'){$('fgo').textContent+=d;await sleep(320,tk)}typing(false);await sleep(500,tk)},
+  end:()=>{typing(false);setCam(OFFICE);T('fsp','915');T('fgo','730')}},
+ {t:'Il vérifie, puis clique sur « Envoyer »',p:"Un collègue a déjà validé la grille. L'application refuse un prix différent de la grille officielle. L'agent envoie.",
+  run:async tk=>{const c=$('cursor');c.setAttribute('opacity',1);await tween(900,tk,k=>c.setAttribute('transform',`translate(${350-28*k} ${352-34*k})`));$('btn').setAttribute('fill','#163a91');await sleep(250,tk);$('btn').setAttribute('fill','#1d8f5f');T('btnt','Envoyé ✓');T('scrst','Signé et chiffré 🔒');await sleep(800,tk)},
+  end:()=>{$('cursor').setAttribute('opacity',1);$('cursor').setAttribute('transform','translate(322 318)');$('btn').setAttribute('fill','#1d8f5f');T('btnt','Envoyé ✓');T('scrst','Signé et chiffré 🔒')}},
+ {t:"Le message voyage jusqu'à la station",p:"Le message part du serveur par Internet, puis l'antenne 4G le transmet à la station. Il est signé et chiffré : personne ne peut le lire ni le modifier en route.",
+  run:async tk=>{$('cursor').setAttribute('opacity',0);$('waves').setAttribute('opacity',1);await fly('route','#1f4fc0',5200,tk,{z:.62});$('waves').setAttribute('opacity',0)},
+  end:()=>{$('cursor').setAttribute('opacity',0);$('waves').setAttribute('opacity',0);setCam(BOX)}},
+ {t:'Le boîtier reçoit et vérifie',p:"Dans le local technique, le boîtier reçoit le message. Il vérifie qu'il vient bien du siège, qu'il est destiné à cette station, que les prix sont corrects et qu'il n'a pas déjà été appliqué.",
+  run:async tk=>{await camTo(BOX,900,tk);leds(true);$('checks').setAttribute('opacity',1);for(const c of ['ck1','ck2','ck3','ck4']){await sleep(500,tk);const e=$(c);e.textContent=e.textContent.replace('·','✓');e.setAttribute('fill','#1d8f5f')}await sleep(800,tk)},
+  end:()=>{setCam(BOX);leds(true);$('checks').setAttribute('opacity',1);['ck1','ck2','ck3','ck4'].forEach(c=>{const e=$(c);e.textContent=e.textContent.replace('·','✓');e.setAttribute('fill','#1d8f5f')})}},
+ {t:'Un client fait le plein : le boîtier attend',p:"Le boîtier envoie le prix à la pompe par un câble qui passe sous la dalle. Un taxi est en train de se servir : on ne change jamais le prix pendant un plein, la pompe attend que le pistolet soit raccroché.",
+  run:async tk=>{$('checks').setAttribute('opacity',0);await camTo(STATION,1200,tk);cable('cab1','on');$('fillbadge').setAttribute('opacity',1);await sleep(1800,tk);T('fillt','Pistolet raccroché');$('hose').setAttribute('opacity',0);await sleep(700,tk);$('fillbadge').setAttribute('opacity',0);await tween(1400,tk,k=>{$('car').setAttribute('transform',`translate(${-260*k} 0)`);$('car').setAttribute('opacity',1-k)})},
+  end:()=>{$('checks').setAttribute('opacity',0);setCam(STATION);cable('cab1','on');$('fillbadge').setAttribute('opacity',0);$('hose').setAttribute('opacity',0);$('car').setAttribute('opacity',0)}},
+ {t:'La pompe Gilbarco change de prix',p:"La pompe est libre : elle prend le nouveau prix, l'affiche, et le boîtier le relit pour vérifier qu'il est bien enregistré.",
+  run:async tk=>{await camTo(P1,1000,tk);await Promise.all([roll('p1sp',905,915,1400,tk),roll('p1go',725,730,1400,tk)]);cable('cab1','ok');await sleep(900,tk)},
+  end:()=>{setCam(P1);T('p1sp',915);T('p1go',730);cable('cab1','ok')}},
+ {t:'Puis la pompe Wayne',p:"Même chose pour la pompe Wayne, avec son propre langage de communication. Le boîtier connaît les deux.",
+  run:async tk=>{await camTo(STATION,800,tk);cable('cab2','on');await camTo(P2,900,tk);await Promise.all([roll('p2sp',905,915,1300,tk),roll('p2go',725,730,1300,tk)]);cable('cab2','ok');await sleep(800,tk)},
+  end:()=>{setCam(P2);T('p2sp',915);T('p2go',730);cable('cab2','ok')}},
+ {t:'Le totem en dernier',p:"Quand toutes les pompes ont le nouveau prix, le totem au bord de la route l'affiche à son tour. Ainsi, le prix affiché aux clients est toujours celui que les pompes facturent.",
+  run:async tk=>{await camTo(STATION,800,tk);cable('cab3','on');await camTo(TOT,900,tk);await Promise.all([roll('tsp',905,915,1300,tk),roll('tgo',725,730,1300,tk)]);cable('cab3','ok');await sleep(900,tk)},
+  end:()=>{setCam(TOT);T('tsp',915);T('tgo',730);cable('cab3','ok')}},
+ {t:'La confirmation revient au siège',p:"Le boîtier renvoie une confirmation avec les prix relus sur chaque pompe et sur le totem. Sur l'écran de l'agent, la station apparaît « Prix appliqués ». En cas de problème, une alerte s'afficherait à la place.",
+  run:async tk=>{await camTo(STATION,700,tk);await camTo(BOX,700,tk);$('waves').setAttribute('opacity',1);await fly('back','#1d8f5f',4600,tk,{z:.62});$('waves').setAttribute('opacity',0);await camTo(OFFICE,700,tk);$('form').setAttribute('opacity',0);$('result').setAttribute('opacity',1);$('arm').setAttribute('transform','rotate(-115 170 304)');await sleep(1200,tk)},
+  end:()=>{$('waves').setAttribute('opacity',0);setCam(OFFICE);$('form').setAttribute('opacity',0);$('result').setAttribute('opacity',1);$('arm').setAttribute('transform','rotate(-115 170 304)')}},
+];
+
+function caption(i){T('capn',`Étape ${i+1} sur ${STEPS.length}`);T('capt',STEPS[i].t);T('capp',STEPS[i].p);$('prev').disabled=i===0;$('next').disabled=i===STEPS.length-1}
+function setPlay(){$('play').textContent=playing?'❚❚ Pause':(cur===STEPS.length-1?'↺ Revoir':'▶ Lecture')}
+async function go(i){
+  const tk=++token;cur=i;reset();for(let k=0;k<i;k++)STEPS[k].end();caption(i);setPlay();
+  try{await STEPS[i].run(tk);STEPS[i].end();
+    if(playing&&tk===token){if(i<STEPS.length-1){await sleep(1300,tk);go(i+1)}else{playing=false;setPlay()}}
+  }catch(e){}
+}
+$('play').onclick=()=>{if(playing){playing=false;token++;typing(false);STEPS[cur].end();setPlay();return}playing=true;go(cur===STEPS.length-1?0:cur)};
+$('next').onclick=()=>{playing=false;if(cur<STEPS.length-1)go(cur+1)};
+$('prev').onclick=()=>{playing=false;if(cur>0)go(cur-1)};
+reset();caption(0);setPlay();
+</script>
