@@ -1,0 +1,282 @@
+<title>Changement de prix animé</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Mise en page : une scène de nuit (le changement a lieu à minuit) en une colonne ; légende et commandes sous la scène. Choix délibéré d'un seul thème sombre, couleurs toutes explicites. */
+:root{
+  --bg:#0e1420; --panel:#151d2c; --panel2:#1d2738; --line:#2f3b52; --fg:#e8edf5; --fg2:#9aa7bd;
+  --cmd:#5aa2ff; --ack:#4fd1a5; --led:#ffb21a; --led-dim:#5c4512; --bad:#ff7b6b; --box:#1f6f5e; --box-fg:#d9f5ee;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding-block:16px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px}
+h1{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.1;margin:0;letter-spacing:.3px}
+.sub{color:var(--fg2);font-size:13px;margin:2px 0 0}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:6px}
+svg{display:block;width:100%;height:auto}
+.cap{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:118px;display:flex;flex-direction:column;gap:4px}
+.cap .n{font-family:var(--mono);font-size:12px;color:var(--cmd)}
+.cap h2{font-family:var(--display);font-size:22px;font-weight:700;margin:0;line-height:1.15}
+.cap p{margin:0;color:var(--fg2);font-size:14.5px}
+.ctrl{display:grid;grid-template-columns:1fr 1.6fr 1fr;gap:8px}
+button{font:inherit;font-weight:600;font-size:15px;height:46px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--fg);cursor:pointer}
+button.main{background:var(--cmd);border-color:var(--cmd);color:#08121f}
+button:focus-visible{outline:2px solid var(--led);outline-offset:2px}
+button:disabled{opacity:.4}
+.dots{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+.dots button{width:24px;height:26px;padding:0;font-size:11px;border-radius:7px;font-family:var(--mono);font-weight:500}
+.dots button[aria-current="true"]{background:var(--cmd);color:#08121f;border-color:var(--cmd)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--fg2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.foot{font-size:12.5px;color:var(--fg2)}
+/* SVG */
+.p{fill:var(--panel2);stroke:var(--line);stroke-width:1.5}
+.b{fill:var(--box);stroke:#3fb39a;stroke-width:1.6}
+.t{fill:var(--fg);font-family:var(--body);font-size:12.5px}
+.tb{fill:var(--fg);font-family:var(--body);font-size:13px;font-weight:600}
+.ts{fill:var(--fg2);font-family:var(--body);font-size:10.5px}
+.tbx{fill:var(--box-fg);font-family:var(--body);font-size:12px;font-weight:600}
+.led-bg{fill:#05070b;stroke:#2a2f3a;stroke-width:1}
+.led{fill:var(--led);font-family:var(--mono);font-weight:700}
+.ledl{fill:var(--led-dim);font-family:var(--mono);font-size:9px;letter-spacing:.5px}
+.wire{fill:none;stroke:var(--line);stroke-width:2.2}
+.wire.on{stroke:var(--cmd)}
+.wire.ack{stroke:var(--ack)}
+.radio{fill:none;stroke:var(--line);stroke-width:2;stroke-dasharray:5 5}
+.hl{transition:stroke .3s, stroke-width .3s}
+.hl.active{stroke:var(--led);stroke-width:3}
+.fade{transition:opacity .35s}
+@media (prefers-reduced-motion:reduce){.fade,.hl{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Comment un prix change, de l'ordinateur à la pompe</h1>
+    <p class="sub">Exemple : nouvelle grille fictive Super 915 et Gasoil 730 FCFA/L, applicable le 1er décembre à minuit. Une station avec une pompe Gilbarco, une pompe Wayne et un totem.</p>
+  </header>
+
+  <div class="stage">
+    <svg id="scene" viewBox="0 0 360 600" role="img" aria-labelledby="sct">
+      <title id="sct">Scène animée : le siège, le serveur, l'antenne 4G, le boîtier de la station avec la passerelle et le contrôleur de piste, une pompe Gilbarco, une pompe Wayne et le totem.</title>
+      <!-- liaisons (dessinées d'abord) -->
+      <path id="w-siege" class="wire hl" d="M150 62 H206"/>
+      <path id="w-cloud" class="radio hl" d="M300 108 V160"/>
+      <path id="w-radio" class="radio hl" d="M300 196 C 300 226, 250 238, 190 238"/>
+      <path id="w-int" class="wire hl" d="M120 284 H150"/>
+      <path id="w-gil" class="wire hl" d="M190 312 V346 H70 V408"/>
+      <path id="w-way" class="wire hl" d="M200 312 V408"/>
+      <path id="w-tot" class="wire hl" d="M220 312 V330 H306 V368"/>
+      <!-- chemins des paquets (invisibles) -->
+      <path id="r1" d="M150 62 H206" fill="none"/>
+      <path id="r2" d="M300 108 V160 V196 C 300 226, 250 238, 190 238 H80 V258" fill="none"/>
+      <path id="r3" d="M120 284 H150" fill="none"/>
+      <path id="r4" d="M190 312 V346 H70 V408" fill="none"/>
+      <path id="r5" d="M200 312 V408" fill="none"/>
+      <path id="r6" d="M220 312 V330 H306 V368" fill="none"/>
+      <path id="ra" d="M80 258 V238 H190 C 250 238, 300 226, 300 196 V160 V108 V62 H150" fill="none"/>
+
+      <!-- siège -->
+      <rect x="10" y="14" width="140" height="96" rx="10" class="p"/>
+      <text x="22" y="34" class="tb">Siège · ordinateur</text>
+      <rect x="22" y="44" width="116" height="56" rx="5" fill="#0b111b" stroke="#2f3b52"/>
+      <text id="siege-l1" x="30" y="62" class="t">Grille du 1er déc.</text>
+      <text id="siege-l2" x="30" y="78" class="ts">SP 905 → 915</text>
+      <text id="siege-l3" x="30" y="92" class="ts">GO 725 → 730</text>
+      <!-- serveur -->
+      <rect x="206" y="14" width="144" height="96" rx="10" class="p"/>
+      <text x="218" y="34" class="tb">Serveur (cloud)</text>
+      <text id="cloud-l1" x="218" y="56" class="t">En attente</text>
+      <text id="cloud-l2" x="218" y="74" class="ts"></text>
+      <text id="cloud-l3" x="218" y="92" class="ts"></text>
+      <!-- antenne -->
+      <path d="M292 196 L300 160 L308 196 Z" fill="none" stroke="#9aa7bd" stroke-width="1.5"/>
+      <circle cx="300" cy="158" r="3" fill="#9aa7bd"/>
+      <text x="314" y="178" class="ts">4G</text>
+      <text id="net-badge" x="216" y="150" class="ts"></text>
+      <!-- batiment + coffret -->
+      <rect x="10" y="226" width="250" height="104" rx="10" fill="none" stroke="#2f3b52" stroke-dasharray="4 4"/>
+      <text x="22" y="222" class="ts">Local technique de la station</text>
+      <rect x="20" y="258" width="100" height="54" rx="7" class="b"/>
+      <text x="30" y="279" class="tbx">Passerelle</text>
+      <text id="gw-st" x="30" y="298" class="ts" style="fill:#bfe9dd">en veille</text>
+      <rect x="150" y="258" width="100" height="54" rx="7" class="b"/>
+      <text x="160" y="279" class="tbx">Contrôleur</text>
+      <text x="160" y="298" class="ts" style="fill:#bfe9dd">de piste</text>
+      <!-- horloge -->
+      <rect x="196" y="232" width="58" height="20" rx="4" fill="#05070b" stroke="#2a2f3a"/>
+      <text id="clock" x="225" y="246" text-anchor="middle" class="led" font-size="11">30/11 18:00</text>
+      <!-- check list -->
+      <g id="checks" class="fade" opacity="0">
+        <rect x="16" y="120" width="182" height="92" rx="8" fill="#0b111b" stroke="#3fb39a"/>
+        <text x="26" y="138" class="tbx">La passerelle vérifie</text>
+        <text id="c1" x="26" y="156" class="ts">· signature</text>
+        <text id="c2" x="26" y="171" class="ts">· destinataire et date</text>
+        <text id="c3" x="26" y="186" class="ts">· ordre et doublon</text>
+        <text id="c4" x="26" y="201" class="ts">· prix dans les bornes</text>
+      </g>
+      <!-- pompe gilbarco -->
+      <rect x="14" y="408" width="112" height="178" rx="10" class="p"/>
+      <text x="24" y="428" class="tb">Pompe Gilbarco</text>
+      <rect x="24" y="436" width="92" height="66" rx="5" class="led-bg"/>
+      <text x="30" y="452" class="ledl">PRIX UNITAIRE</text>
+      <text x="30" y="472" class="ledl">SP</text><text id="g-sp" x="110" y="473" text-anchor="end" class="led" font-size="17">905</text>
+      <text x="30" y="494" class="ledl">GO</text><text id="g-go" x="110" y="495" text-anchor="end" class="led" font-size="17">725</text>
+      <text id="g-st" x="24" y="524" class="ts">au repos</text>
+      <text x="24" y="544" class="ts">boucle 2 fils</text>
+      <text x="24" y="560" class="ts">(Two-Wire)</text>
+      <rect id="g-hl" x="14" y="408" width="112" height="178" rx="10" fill="none" class="hl" stroke="transparent"/>
+      <!-- pompe wayne -->
+      <rect x="140" y="408" width="112" height="178" rx="10" class="p"/>
+      <text x="150" y="428" class="tb">Pompe Wayne</text>
+      <rect x="150" y="436" width="92" height="66" rx="5" class="led-bg"/>
+      <text x="156" y="452" class="ledl">PRIX LE LITRE</text>
+      <text x="156" y="472" class="ledl">SP</text><text id="w-sp" x="236" y="473" text-anchor="end" class="led" font-size="17">905</text>
+      <text x="156" y="494" class="ledl">GO</text><text id="w-go" x="236" y="495" text-anchor="end" class="led" font-size="17">725</text>
+      <text id="wy-st" x="150" y="524" class="ts">au repos</text>
+      <text x="150" y="544" class="ts">liaison DART</text>
+      <rect id="wy-hl" x="140" y="408" width="112" height="178" rx="10" fill="none" class="hl" stroke="transparent"/>
+      <!-- totem -->
+      <rect x="266" y="368" width="84" height="218" rx="10" class="p"/>
+      <text x="278" y="388" class="tb">Totem</text>
+      <rect x="276" y="398" width="64" height="104" rx="5" class="led-bg"/>
+      <text x="282" y="414" class="ledl">SANS PLOMB</text>
+      <text id="t-sp" x="334" y="440" text-anchor="end" class="led" font-size="21">905</text>
+      <text x="282" y="462" class="ledl">GASOIL</text>
+      <text id="t-go" x="334" y="488" text-anchor="end" class="led" font-size="21">725</text>
+      <text id="t-st" x="276" y="524" class="ts">ancien prix</text>
+      <text x="276" y="544" class="ts">mis à jour</text>
+      <text x="276" y="560" class="ts">en dernier</text>
+      <rect id="t-hl" x="266" y="368" width="84" height="218" rx="10" fill="none" class="hl" stroke="transparent"/>
+      <!-- paquet -->
+      <g id="pkt" opacity="0">
+        <rect x="-15" y="-10" width="30" height="20" rx="4" fill="#5aa2ff"/>
+        <path d="M-15 -8 L0 2 L15 -8" fill="none" stroke="#08121f" stroke-width="1.5"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--cmd)"></i>commande (prix signés)</span>
+    <span><i style="background:var(--ack)"></i>accusé (confirmation)</span>
+    <span><i style="background:var(--led)"></i>prix affichés</span>
+  </div>
+
+  <div class="cap" aria-live="polite">
+    <div class="n" id="cap-n">Étape 1 sur 12</div>
+    <h2 id="cap-t"></h2>
+    <p id="cap-p"></p>
+  </div>
+
+  <div class="ctrl">
+    <button id="prev" aria-label="Étape précédente">◀ Préc.</button>
+    <button id="play" class="main">▶ Lecture</button>
+    <button id="next" aria-label="Étape suivante">Suiv. ▶</button>
+  </div>
+  <div class="dots" id="dots" role="group" aria-label="Aller à une étape"></div>
+
+  <p class="foot">Animation de principe. Les modèles de contrôleur et de pompes, et le comportement exact pendant un plein, restent à confirmer avec les fabricants (voir le dossier du boîtier).</p>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const OLD={sp:905,go:725}, NEW={sp:915,go:730};
+let token=0, playing=false, cur=0;
+
+function reset(){
+  setT('siege-l1','Grille du 1er déc.');setT('siege-l2','SP 905 → 915');setT('siege-l3','GO 725 → 730');
+  setT('cloud-l1','En attente');setT('cloud-l2','');setT('cloud-l3','');setT('net-badge','');
+  setT('gw-st','en veille');setT('clock','30/11 18:00');
+  ['g-sp','w-sp','t-sp'].forEach(i=>setT(i,OLD.sp));['g-go','w-go','t-go'].forEach(i=>setT(i,OLD.go));
+  setT('g-st','au repos');setT('wy-st','au repos');setT('t-st','ancien prix');
+  ['c1','c2','c3','c4'].forEach((c,i)=>{const e=$(c);e.textContent='· '+['signature','destinataire et date','ordre et doublon','prix dans les bornes'][i];e.style.fill=''});
+  $('checks').setAttribute('opacity',0);$('pkt').setAttribute('opacity',0);
+  document.querySelectorAll('.wire,.radio').forEach(w=>w.classList.remove('on','ack','active'));
+  ['g-hl','wy-hl','t-hl'].forEach(i=>{$(i).classList.remove('active');$(i).setAttribute('stroke','transparent')});
+}
+function setT(id,v){$(id).textContent=v}
+function hl(id,on){const e=$(id);e.classList.toggle('active',on);e.setAttribute('stroke',on?'':'transparent')}
+function wire(id,cls){const w=$(id);w.classList.remove('on','ack');if(cls)w.classList.add(cls)}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function sleep(ms,tk){return new Promise((res,rej)=>setTimeout(()=>tk===token?res():rej('stop'),reduce?Math.min(ms,250):ms))}
+function move(route,color,ms,tk){
+  return new Promise((res,rej)=>{
+    const p=$(route),L=p.getTotalLength(),g=$('pkt');g.querySelector('rect').setAttribute('fill',color);g.setAttribute('opacity',1);
+    const t0=performance.now(),dur=reduce?200:ms;
+    function f(t){
+      if(tk!==token)return rej('stop');
+      const k=Math.min(1,(t-t0)/dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2,pt=p.getPointAtLength(e*L);
+      g.setAttribute('transform',`translate(${pt.x} ${pt.y})`);
+      if(k<1)requestAnimationFrame(f);else{g.setAttribute('opacity',0);res()}
+    }
+    requestAnimationFrame(f);
+  });
+}
+
+const STEPS=[
+ {t:'Le siège saisit la nouvelle grille',p:"Awa saisit les prix fixés par l'État pour le mois suivant et l'heure d'entrée en vigueur : le 1er décembre à 00:00.",
+  run:async tk=>{setT('siege-l1','Saisie par Awa');await sleep(1400,tk)},end:()=>setT('siege-l1','Saisie par Awa')},
+ {t:'Une deuxième personne valide',p:"Moussa vérifie et valide. La personne qui saisit ne peut pas valider seule. Un prix différent de la grille sera ensuite bloqué partout.",
+  run:async tk=>{setT('siege-l1','Validée par Moussa ✓');await sleep(1400,tk)},end:()=>setT('siege-l1','Validée par Moussa ✓')},
+ {t:'Le serveur prépare et signe la commande',p:"Le site envoie la grille au serveur. Le serveur crée une commande pour chaque station, avec un numéro unique et une date d'expiration, et la signe avec la clé secrète de ce boîtier. Une commande modifiée en route ne passerait pas.",
+  run:async tk=>{wire('w-siege','on');await move('r1','#5aa2ff',1100,tk);setT('cloud-l1','Commande signée 🔒');setT('cloud-l2','pour la station CI-ABJ-012');setT('cloud-l3','à appliquer le 01/12 00:00');await sleep(900,tk)},
+  end:()=>{wire('w-siege','on');setT('cloud-l1','Commande signée 🔒');setT('cloud-l2','pour la station CI-ABJ-012');setT('cloud-l3','à appliquer le 01/12 00:00')}},
+ {t:"Envoi par 4G, la veille",p:"La commande part par Internet puis par le réseau 4G jusqu'au boîtier, dans une connexion chiffrée. Si la 4G est coupée, le serveur la garde et la renvoie dès que le boîtier revient.",
+  run:async tk=>{wire('w-cloud','on');wire('w-radio','on');setT('net-badge','connexion chiffrée');await move('r2','#5aa2ff',2200,tk);setT('gw-st','commande reçue')},
+  end:()=>{wire('w-cloud','on');wire('w-radio','on');setT('net-badge','connexion chiffrée');setT('gw-st','commande reçue')}},
+ {t:'La passerelle vérifie tout',p:"Avant de toucher à quoi que ce soit, la passerelle contrôle la signature, que la commande est bien pour cette station et pas périmée, qu'elle n'est ni un doublon ni plus ancienne qu'une autre, et que les prix restent dans des bornes raisonnables.",
+  run:async tk=>{$('checks').setAttribute('opacity',1);for(const c of ['c1','c2','c3','c4']){await sleep(550,tk);const e=$(c);e.textContent=e.textContent.replace('·','✓');e.style.fill='#4fd1a5'}await sleep(700,tk)},
+  end:()=>{$('checks').setAttribute('opacity',1);['c1','c2','c3','c4'].forEach(c=>{const e=$(c);e.textContent=e.textContent.replace('·','✓');e.style.fill='#4fd1a5'})}},
+ {t:'Elle garde la commande et prévient le siège',p:"La commande est écrite dans la mémoire permanente du boîtier : elle survit à une coupure de courant. La passerelle renvoie un accusé « reçu, programmé pour minuit ».",
+  run:async tk=>{$('checks').setAttribute('opacity',0);setT('gw-st','programmé 00:00');wire('w-cloud','ack');wire('w-radio','ack');await move('ra','#4fd1a5',2200,tk);setT('cloud-l1','Reçu par le boîtier ✓');setT('cloud-l2','programmé pour 00:00')},
+  end:()=>{$('checks').setAttribute('opacity',0);setT('gw-st','programmé 00:00');wire('w-cloud','ack');wire('w-radio','ack');setT('cloud-l1','Reçu par le boîtier ✓');setT('cloud-l2','programmé pour 00:00')}},
+ {t:"Le boîtier attend l'heure",p:"Rien ne change dans la station avant minuit. Le boîtier n'a plus besoin d'Internet : même si la 4G tombe pendant la nuit, le changement aura lieu à l'heure.",
+  run:async tk=>{wire('w-cloud',null);wire('w-radio',null);setT('net-badge','');for(const h of ['20:00','22:00','23:00','23:59','00:00']){setT('clock',(h==='00:00'?'01/12 ':'30/11 ')+h);await sleep(480,tk)}},
+  end:()=>{wire('w-cloud',null);wire('w-radio',null);setT('net-badge','');setT('clock','01/12 00:00')}},
+ {t:'Minuit : la passerelle donne l\'ordre',p:"À 00:00, la passerelle transmet les nouveaux prix au contrôleur de piste, dans le même coffret. C'est le contrôleur qui sait parler aux pompes Gilbarco et Wayne.",
+  run:async tk=>{setT('gw-st','envoi au contrôleur');wire('w-int','on');await move('r3','#5aa2ff',900,tk)},end:()=>{setT('gw-st','envoi au contrôleur');wire('w-int','on')}},
+ {t:'Pompe Gilbarco : on attend la fin du plein',p:"Un client est en train de se servir. Le prix ne change jamais pendant un plein : le contrôleur attend que le pistolet soit raccroché, puis envoie le prix par la boucle de 2 fils. La pompe le relit et le confirme.",
+  run:async tk=>{hl('g-hl',true);setT('g-st','plein en cours…');wire('w-gil','on');await move('r4','#5aa2ff',1100,tk);await sleep(1600,tk);setT('g-st','pistolet raccroché');await sleep(800,tk);setT('g-sp',NEW.sp);setT('g-go',NEW.go);setT('g-st','nouveau prix ✓');await sleep(700,tk);hl('g-hl',false)},
+  end:()=>{wire('w-gil','on');setT('g-sp',NEW.sp);setT('g-go',NEW.go);setT('g-st','nouveau prix ✓');hl('g-hl',false)}},
+ {t:'Pompe Wayne : même chose en DART',p:"La pompe Wayne est au repos : elle reçoit le prix tout de suite par sa liaison DART, puis le contrôleur relit le prix mémorisé pour vérifier.",
+  run:async tk=>{hl('wy-hl',true);wire('w-way','on');await move('r5','#5aa2ff',900,tk);setT('w-sp',NEW.sp);setT('w-go',NEW.go);setT('wy-st','nouveau prix ✓');await sleep(800,tk);hl('wy-hl',false)},
+  end:()=>{wire('w-way','on');setT('w-sp',NEW.sp);setT('w-go',NEW.go);setT('wy-st','nouveau prix ✓');hl('wy-hl',false)}},
+ {t:'Le totem en dernier',p:"Une fois toutes les pompes confirmées, le totem affiche les nouveaux prix. Le client ne voit donc jamais sur la route un prix que les pompes ne facturent pas encore.",
+  run:async tk=>{hl('t-hl',true);wire('w-tot','on');await move('r6','#5aa2ff',1000,tk);setT('t-sp',NEW.sp);setT('t-go',NEW.go);setT('t-st','nouveau prix ✓');await sleep(800,tk);hl('t-hl',false)},
+  end:()=>{wire('w-tot','on');setT('t-sp',NEW.sp);setT('t-go',NEW.go);setT('t-st','nouveau prix ✓');hl('t-hl',false)}},
+ {t:'Confirmation au siège',p:"La passerelle renvoie « appliqué », avec les prix relus sur chaque pompe et sur le totem. Au siège, la station passe en « Conforme ». Si une pompe n'avait pas répondu, une alerte serait apparue à la place.",
+  run:async tk=>{['w-int','w-gil','w-way','w-tot'].forEach(w=>wire(w,'ack'));setT('gw-st','appliqué ✓');wire('w-cloud','ack');wire('w-radio','ack');await move('ra','#4fd1a5',2200,tk);setT('cloud-l1','Appliqué ✓');setT('cloud-l2','prix relus : 915 / 730');setT('cloud-l3','');wire('w-siege','ack');setT('siege-l1','CI-ABJ-012 : Conforme ✓');setT('siege-l2','SP 915 · GO 730');setT('siege-l3','confirmé à 00:01')},
+  end:()=>{['w-int','w-gil','w-way','w-tot','w-cloud','w-radio','w-siege'].forEach(w=>wire(w,'ack'));setT('gw-st','appliqué ✓');setT('cloud-l1','Appliqué ✓');setT('cloud-l2','prix relus : 915 / 730');setT('cloud-l3','');setT('siege-l1','CI-ABJ-012 : Conforme ✓');setT('siege-l2','SP 915 · GO 730');setT('siege-l3','confirmé à 00:01')}},
+];
+
+const dots=$('dots');
+STEPS.forEach((s,i)=>{const b=document.createElement('button');b.textContent=i+1;b.setAttribute('aria-label','Étape '+(i+1)+' : '+s.t);b.onclick=()=>go(i,false);dots.appendChild(b)});
+
+function caption(i){
+  $('cap-n').textContent=`Étape ${i+1} sur ${STEPS.length}`;$('cap-t').textContent=STEPS[i].t;$('cap-p').textContent=STEPS[i].p;
+  [...dots.children].forEach((b,k)=>b.setAttribute('aria-current',k===i));
+  $('prev').disabled=i===0;$('next').disabled=i===STEPS.length-1&&!playing;
+}
+async function go(i,auto){
+  const tk=++token;cur=i;reset();for(let k=0;k<i;k++)STEPS[k].end();caption(i);
+  try{
+    await STEPS[i].run(tk);STEPS[i].end();
+    if(playing&&tk===token){
+      if(i<STEPS.length-1){await sleep(1600,tk);go(i+1,true)}
+      else{playing=false;setPlay()}
+    }
+  }catch(e){}
+}
+function setPlay(){$('play').textContent=playing?'❚❚ Pause':(cur===STEPS.length-1?'↺ Recommencer':'▶ Lecture');$('next').disabled=cur===STEPS.length-1}
+$('play').onclick=()=>{
+  if(playing){playing=false;token++;STEPS[cur].end();setPlay();return}
+  playing=true;setPlay();go(cur===STEPS.length-1?0:cur,true);
+};
+$('next').onclick=()=>{playing=false;setPlay();if(cur<STEPS.length-1)go(cur+1,false)};
+$('prev').onclick=()=>{playing=false;setPlay();if(cur>0)go(cur-1,false)};
+reset();caption(0);setPlay();
+</script>

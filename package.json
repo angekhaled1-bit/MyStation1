@@ -1,0 +1,16 @@
+{
+  "name": "fuelprice-control",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Pilotage à distance des prix carburant : cloud, boîtier passerelle, totems et pompes.",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "build": "npm run build -w @fpc/protocol && npm run build -w @fpc/api -w @fpc/gateway-sim",
+    "test": "npm run build -w @fpc/protocol && npm test -w @fpc/protocol -w @fpc/gateway-sim -w @fpc/api",
+    "broker": "npm run broker -w @fpc/gateway-sim",
+    "api": "npm run start -w @fpc/api",
+    "sim": "npm run start -w @fpc/gateway-sim",
+    "web": "npm run dev -w @fpc/web"
+  },
+  "engines": { "node": ">=22" }
+}

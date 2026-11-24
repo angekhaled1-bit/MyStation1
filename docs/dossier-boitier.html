@@ -1,0 +1,513 @@
+<title>Dossier boîtier station</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Mise en page : dossier technique en une colonne, lisible sur téléphone ; schémas SVG verticaux ; tableaux défilants. */
+:root{
+  --bg:#f1f3f2; --surface:#ffffff; --surface2:#e4e9e6; --fg:#16201c; --fg2:#55625c; --line:#cbd3cf;
+  --accent:#0f6b5c; --accent-soft:#d6ebe6; --blue:#1d4f9c; --blue-soft:#dde7f6; --amber:#b86e00; --amber-soft:#fbecd2;
+  --red:#a3261d; --red-soft:#f8dedb; --green:#2a6a1d; --green-soft:#e0f0da; --hazard:#f0b52e;
+  --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111715; --surface:#19221f; --surface2:#23302b; --fg:#e7eeea; --fg2:#a2afa9; --line:#34423c;
+  --accent:#55c2aa; --accent-soft:#183a33; --blue:#8fb4f0; --blue-soft:#1a2a45; --amber:#f2b453; --amber-soft:#3a2a0f;
+  --red:#f0a59c; --red-soft:#43191a; --green:#a9d98f; --green-soft:#1c3317; --hazard:#c99120; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111715; --surface:#19221f; --surface2:#23302b; --fg:#e7eeea; --fg2:#a2afa9; --line:#34423c;
+  --accent:#55c2aa; --accent-soft:#183a33; --blue:#8fb4f0; --blue-soft:#1a2a45; --amber:#f2b453; --amber-soft:#3a2a0f;
+  --red:#f0a59c; --red-soft:#43191a; --green:#a9d98f; --green-soft:#1c3317; --hazard:#c99120; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15.5px;line-height:1.6}
+.wrap{max-width:820px;margin:0 auto;padding-block:20px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.2px}
+h2{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
+h3{font-size:16px;font-weight:600;margin:0}
+p{margin:0}
+.lead{color:var(--fg2);font-size:15px}
+section{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sec-num{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:1px;text-transform:uppercase}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.note{border-radius:10px;padding:12px 14px;font-size:14.5px;display:flex;flex-direction:column;gap:6px}
+.note.warn{background:var(--amber-soft)}.note.bad{background:var(--red-soft)}.note.ok{background:var(--green-soft)}.note.info{background:var(--blue-soft)}
+.note b.t{font-weight:600}
+ul,ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;white-space:nowrap;vertical-align:1px}
+.v{background:var(--green-soft);color:var(--green)}.c{background:var(--amber-soft);color:var(--amber)}.x{background:var(--red-soft);color:var(--red)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+th,td{text-align:left;vertical-align:top;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{background:var(--surface2);font-weight:600;font-size:12.5px}
+tr:last-child td{border-bottom:0}
+.fig{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px;overflow-x:auto}
+.fig svg{display:block;width:100%;max-width:560px;height:auto;margin:0 auto}
+.cap{font-size:12.5px;color:var(--fg2);text-align:center;margin-top:6px}
+.steps{list-style:none;padding:0;counter-reset:s;gap:8px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:start}
+.steps li::before{content:counter(s);font-family:var(--display);font-weight:700;font-size:17px;color:var(--accent-soft);background:var(--accent);border-radius:8px;text-align:center;line-height:28px;height:28px}
+.toc{display:flex;flex-wrap:wrap;gap:6px}
+.toc a{font-size:13px;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface)}
+a{color:var(--accent)}
+.mono{font-family:var(--mono);font-size:13px}
+.src{font-size:13px;color:var(--fg2)}
+.src li{word-break:break-word}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--fg2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:22px;height:0;border-top:3px solid;display:inline-block}
+/* SVG */
+.s-box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}
+.s-box2{fill:var(--surface2);stroke:var(--line);stroke-width:1.2}
+.s-our{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.s-exist{fill:var(--surface2);stroke:var(--fg2);stroke-width:1.3;stroke-dasharray:5 4}
+.s-haz{fill:var(--amber-soft);stroke:var(--hazard);stroke-width:1.5;stroke-dasharray:6 4}
+.s-t{fill:var(--fg);font-family:var(--body);font-size:13px}
+.s-tb{fill:var(--fg);font-family:var(--body);font-size:13.5px;font-weight:600}
+.s-ts{fill:var(--fg2);font-family:var(--body);font-size:11px}
+.s-tm{fill:var(--fg2);font-family:var(--mono);font-size:10.5px}
+.l-data{stroke:var(--blue);stroke-width:2.2;fill:none}
+.l-loop{stroke:var(--accent);stroke-width:2.2;fill:none}
+.l-pow{stroke:var(--red);stroke-width:2.2;fill:none}
+.l-rf{stroke:var(--amber);stroke-width:2;fill:none;stroke-dasharray:4 4}
+.l-ex{stroke:var(--fg2);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+.ah{fill:var(--blue)}
+@media (max-width:420px){h1{font-size:29px}h2{font-size:23px}}
+</style>
+
+<div class="wrap">
+
+<header style="display:flex;flex-direction:column;gap:8px">
+  <div class="sec-num">FuelPrice Control · pilote AFRIQUIA · 24 novembre 2026</div>
+  <h1>Le boîtier de station : composants, câblage et fonctionnement</h1>
+  <p class="lead">Pompes Gilbarco Frontier et Wayne, totems LED. Dossier établi à partir de vos photos et de recherches sur les documents des fabricants. Chaque point porte sa fiabilité : <span class="tag v">vérifié</span> (source citée), <span class="tag c">à confirmer</span> (logique ou source secondaire), <span class="tag x">inconnu</span>.</p>
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#photos">Vos photos</a><a href="#strategie">Stratégie</a><a href="#existants">Boîtiers existants</a><a href="#composants">Composants</a><a href="#cablage">Câblage</a><a href="#flux">Du site à la pompe</a><a href="#pompes">Gilbarco et Wayne</a><a href="#totem">Totem</a><a href="#emplacement">Emplacement</a><a href="#risques">Risques</a><a href="#etapes">Étapes</a><a href="#questions">Questions</a><a href="#sources">Sources</a>
+  </nav>
+</header>
+
+<div class="note warn">
+  <b class="t">À lire d'abord.</b>
+  <p>Je ne peux pas consulter les documents techniques complets des protocoles Gilbarco et Wayne : ils sont réservés aux partenaires des fabricants. Ce dossier dit ce qui est publié, ce qui est probable et ce qui reste à faire valider par un technicien agréé. Il ne remplace pas la visite d'un installateur ni l'étude ATEX du site. Aucun prix de matériel n'est inventé.</p>
+</div>
+
+<!-- 1 -->
+<section id="photos">
+  <div class="sec-num">1 · Ce que montrent vos photos</div>
+  <h2>Des pompes autonomes, sans contrôleur de piste visible</h2>
+  <div class="card">
+    <ul>
+      <li><b>Pompes Wayne</b> (photos 1, 2, 7) : modèle à colonne et tête grise, logo « Wayne » visible près du pistolet sur la photo 2. L'afficheur (photo 3) porte « Prix le litre / Litres » et un <b>clavier de prédétermination</b> 0 à 9 avec les instructions « inscrire le montant ou le volume ». L'allure fait penser à la gamme <b>Wayne Helix</b> <span class="tag c">à confirmer avec la plaque</span>. Sur la photo 3, l'écran affiche un symbole de clé : la pompe est probablement en mode maintenance ou programmation à ce moment-là.</li>
+      <li><b>Pompes Gilbarco</b> (photos 4, 6, 8, 9, 10) : afficheur « Montant total / Litre / Prix unitaire » marqué <b>Gilbarco Veeder-Root</b>, une face Super et une face Gasoil, petit clavier sur le côté de la tête (photo 4). Vous indiquez des <b>Frontier</b>. La photo 9 montre l'intérieur : compteurs, moteur antidéflagrant, tuyauterie. C'est la zone à risque d'explosion.</li>
+      <li><b>Pompistes au service</b> : on ne voit ni lecteur de carte ni écran de caisse relié aux pompes. Les pompes semblent fonctionner en <b>mode autonome</b> (« stand-alone ») : on décroche, on sert, le prix est mémorisé dans la pompe <span class="tag c">à confirmer</span>.</li>
+      <li><b>Totem neuf</b> (photo 5) : pylône avec chiffres LED à 7 segments « Sans Plomb 855 F, Gasoil 700 F » (prix de septembre 2025). Il est donc électronique et pilotable d'une façon ou d'une autre.</li>
+      <li><b>Panneau peint</b> (photo 6) : « Super Sans Plomb = … / Gasoil = … » écrit à la main sur un panneau. Rien d'électronique : impossible à piloter à distance sans le remplacer.</li>
+      <li><b>Étalonnage en cours</b> (photo 4) : un technicien d'une société de services sert dans une jauge étalon. Il existe donc un prestataire local qui ouvre et règle ces pompes : c'est le bon interlocuteur pour l'installation.</li>
+    </ul>
+  </div>
+  <div class="note info">
+    <b class="t">Prix officiels actuels</b>
+    <p>Novembre 2026 : Super 905 FCFA/L, Gasoil 725 FCFA/L, révisés chaque mois par l'État (Direction générale des hydrocarbures). Les exemples de ce dossier utilisent ces valeurs <span class="tag v">vérifié</span>.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="strategie">
+  <div class="sec-num">2 · Ce que cela change</div>
+  <h2>Sans contrôleur existant, le boîtier devient le contrôleur de piste</h2>
+  <div class="card">
+    <p>Dans mes documents précédents, je recommandais de passer par le <b>contrôleur de station</b> existant et je déconseillais de se brancher sur la liaison des pompes, parce qu'une liaison ne doit avoir qu'un seul maître. Vos photos montrent qu'il n'y a probablement <b>aucun contrôleur</b> : la liaison de communication des pompes est inutilisée. La situation change :</p>
+    <ul>
+      <li>Le boîtier peut devenir <b>l'unique maître</b> de la liaison des pompes. C'est exactement le rôle d'un <b>contrôleur de piste</b> (« forecourt controller »), un produit courant que Gilbarco, Wayne et d'autres vendent pour leurs pompes.</li>
+      <li>Ces contrôleurs parlent nativement le protocole <b>Gilbarco « Two-Wire »</b> (boucle de courant à 2 fils) et le protocole <b>Wayne « DART »</b> <span class="tag v">vérifié</span>. Il ne faut pas écrire ces protocoles soi-même : on achète un contrôleur qui les gère déjà.</li>
+      <li>Les pompes passent du mode autonome au <b>mode piloté</b>. C'est un réglage fait par un technicien dans le calculateur de la pompe, avec sa télécommande ou son clavier de programmation. On ne modifie ni le câblage interne ni les scellés métrologiques <span class="tag c">à confirmer</span> avec l'installateur agréé.</li>
+    </ul>
+  </div>
+  <div class="note bad">
+    <b class="t">Conséquence importante : en mode piloté, la pompe dépend du boîtier</b>
+    <p>Une pompe pilotée attend l'autorisation du contrôleur pour servir. Le contrôleur peut l'accorder automatiquement dès qu'on décroche le pistolet, et le pompiste continue alors à travailler comme avant <span class="tag v">vérifié</span> pour le contrôleur PTS-2. Mais si le boîtier tombe en panne ou n'est plus alimenté, les pompes peuvent <b>refuser de servir</b> jusqu'à ce qu'on les remette en mode autonome <span class="tag c">à confirmer pour chaque modèle</span>. C'est le premier risque à traiter (voir <a href="#risques">Risques</a>).</p>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="existants">
+  <div class="sec-num">3 · Ce qui existe déjà</div>
+  <h2>Des contrôleurs du commerce savent déjà changer les prix à distance</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Produit</th><th>Gilbarco (Two-Wire)</th><th>Wayne (DART)</th><th>Totem LED</th><th>Accès à distance</th><th>Remarques</th></tr></thead>
+      <tbody>
+        <tr><td><b>Technotrade PTS-2</b><br><span class="src">Ukraine, revendeurs en Afrique</span></td><td>Oui, protocole « GILBARCO Two-Wire » avec un convertisseur de boucle de courant <span class="tag v">vérifié</span></td><td>Oui, « WAYNE Dart » <span class="tag v">vérifié</span></td><td>Oui, pour certains modèles d'afficheurs <span class="tag c">liste à demander</span></td><td>Envoi des ventes, des niveaux de cuve et des alarmes vers un serveur distant ; mise à jour des prix des pompes et des totems depuis ce serveur ; JSON sur WebSocket, TLS <span class="tag v">vérifié</span></td><td>Plus de 120 marques de pompes. 4 ports pompes, chacun avec son protocole. Déjà mis en avant pour l'Afrique (Kenya). Autorisation automatique au décroché.</td></tr>
+        <tr><td><b>Gilbarco Epsilon</b></td><td>Oui <span class="tag v">vérifié</span></td><td>Oui <span class="tag v">vérifié</span></td><td><span class="tag x">inconnu</span></td><td>Par les logiciels Gilbarco <span class="tag c">à confirmer</span></td><td>Jusqu'à 64 pompes. Produit du fabricant de vos pompes Gilbarco, à demander au distributeur Gilbarco.</td></tr>
+        <tr><td><b>DOMS PSS 5000</b><br><span class="src">Gilbarco</span></td><td>Oui</td><td>Oui, terminal « Wayne CL » dans la liste <span class="tag v">vérifié</span></td><td>Selon intégration</td><td>Par le logiciel de caisse ou de siège relié</td><td>Plus de 100 protocoles, dont IFSF. Standard des grands réseaux, plus de 80 000 installations. Souvent vendu avec un système de caisse complet.</td></tr>
+        <tr><td><b>STATION Forecourt Controller</b></td><td>Annoncé</td><td>Annoncé</td><td><span class="tag x">inconnu</span></td><td><span class="tag x">inconnu</span></td><td>Le fabricant annonce un support local au Kenya, en Tanzanie et en <b>Côte d'Ivoire</b> <span class="tag c">affirmation du vendeur</span>.</td></tr>
+        <tr><td><b>Totems LED avec 4G</b><br><span class="src">fabricants divers</span></td><td colspan="2">Sans objet</td><td>Oui</td><td>Application, 4G, RS-485, TCP/IP selon le modèle <span class="tag v">vérifié</span></td><td>Pilotent seulement l'afficheur. Demander la documentation du protocole avant d'acheter.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h3>Comment adapter un contrôleur existant à notre application</h3>
+    <ol>
+      <li><b>Le contrôleur gère les pompes et le totem</b> : protocoles Gilbarco et Wayne, autorisation, relecture des prix. C'est la partie la plus risquée, et elle est déjà éprouvée.</li>
+      <li><b>Notre passerelle gère la sécurité et le suivi</b>. Le logiciel déjà écrit (<span class="mono">apps/gateway-sim</span>) reçoit la commande signée, la vérifie, la garde en mémoire, puis demande au contrôleur de changer les prix et relit le résultat. On remplace seulement le totem et les pompes simulés par un « pilote PTS-2 » qui parle à l'interface locale du contrôleur.</li>
+      <li><b>Variante plus simple</b> : le contrôleur se connecte directement à notre serveur avec sa fonction « serveur distant », sans passerelle. Il y a un équipement de moins, mais aussi moins de contrôles côté station (pas de signature propre, file gérée par le contrôleur). À réserver aux stations où l'on veut le coût le plus bas.</li>
+    </ol>
+  </div>
+  <div class="note ok">
+    <b class="t">Recommandation pour le pilote</b>
+    <p>Comparer deux devis : un <b>contrôleur multimarque</b> du type PTS-2 (Gilbarco et Wayne dans le même boîtier, interface ouverte, présence en Afrique) et l'offre du <b>distributeur Gilbarco</b> (Epsilon ou DOMS). Choisir selon le support local à Abidjan, l'accord des fabricants pour la garantie des pompes et la documentation de l'interface. Ne pas écrire nous-mêmes les protocoles des pompes.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="composants">
+  <div class="sec-num">4 · Modélisation du boîtier</div>
+  <h2>Ce que contient le coffret</h2>
+  <div class="fig">
+    <svg viewBox="0 0 360 560" role="img" aria-labelledby="f1t">
+      <title id="f1t">Vue de face du coffret : trois rails DIN avec la protection électrique, la passerelle et le routeur 4G, le contrôleur de piste et ses convertisseurs, puis le bornier ; onduleur sous le coffret ; antenne au-dessus.</title>
+      <!-- antenne -->
+      <line x1="290" y1="8" x2="290" y2="46" class="l-rf"/><rect x="282" y="2" width="16" height="10" rx="3" class="s-box2"/>
+      <text x="230" y="20" class="s-ts">antenne 4G</text>
+      <!-- coffret -->
+      <rect x="14" y="44" width="332" height="410" rx="10" class="s-our"/>
+      <text x="26" y="66" class="s-tb">Coffret métallique IP65, fermé à clé</text>
+      <!-- rail 1 -->
+      <line x1="26" y1="100" x2="334" y2="100" stroke="var(--fg2)" stroke-width="1"/>
+      <text x="26" y="88" class="s-ts">Rail 1 · Alimentation et protection</text>
+      <rect x="26" y="104" width="66" height="62" rx="5" class="s-box"/><text x="32" y="124" class="s-t">Disjonc-</text><text x="32" y="140" class="s-t">teur</text><text x="32" y="157" class="s-tm">230 V</text>
+      <rect x="98" y="104" width="76" height="62" rx="5" class="s-box"/><text x="104" y="124" class="s-t">Parafoudre</text><text x="104" y="140" class="s-t">secteur</text><text x="104" y="157" class="s-tm">type 2</text>
+      <rect x="180" y="104" width="154" height="62" rx="5" class="s-box"/><text x="188" y="124" class="s-t">Alimentation</text><text x="188" y="140" class="s-t">230 V → 24 V DC</text><text x="188" y="157" class="s-tm">rail DIN</text>
+      <!-- rail 2 -->
+      <line x1="26" y1="198" x2="334" y2="198" stroke="var(--fg2)" stroke-width="1"/>
+      <text x="26" y="186" class="s-ts">Rail 2 · Communication</text>
+      <rect x="26" y="202" width="150" height="70" rx="5" class="s-box"/><text x="34" y="222" class="s-t">Routeur 4G</text><text x="34" y="238" class="s-t">industriel</text><text x="34" y="256" class="s-tm">SIM · VPN · pare-feu</text>
+      <rect x="182" y="202" width="152" height="70" rx="5" class="s-box"/><text x="190" y="222" class="s-t">Passerelle Linux</text><text x="190" y="238" class="s-t">notre logiciel</text><text x="190" y="256" class="s-tm">MQTT · file · signature</text>
+      <!-- rail 3 -->
+      <line x1="26" y1="304" x2="334" y2="304" stroke="var(--fg2)" stroke-width="1"/>
+      <text x="26" y="292" class="s-ts">Rail 3 · Équipements de la station</text>
+      <rect x="26" y="308" width="140" height="74" rx="5" class="s-box"/><text x="34" y="328" class="s-tb">Contrôleur</text><text x="34" y="344" class="s-tb">de piste</text><text x="34" y="364" class="s-tm">4 ports pompes, 1 totem</text>
+      <rect x="172" y="308" width="76" height="74" rx="5" class="s-box"/><text x="178" y="328" class="s-t">Convert.</text><text x="178" y="344" class="s-t">boucle</text><text x="178" y="364" class="s-tm">Gilbarco</text>
+      <rect x="254" y="308" width="80" height="74" rx="5" class="s-box"/><text x="260" y="328" class="s-t">Para-</text><text x="260" y="344" class="s-t">foudres</text><text x="260" y="364" class="s-tm">lignes data</text>
+      <!-- bornier -->
+      <rect x="26" y="398" width="308" height="40" rx="5" class="s-box2"/>
+      <text x="34" y="423" class="s-t">Bornier de sortie : pompes, totem, terre</text>
+      <!-- onduleur -->
+      <rect x="60" y="474" width="240" height="56" rx="8" class="s-box"/>
+      <text x="74" y="498" class="s-tb">Onduleur (UPS)</text><text x="74" y="516" class="s-ts">tient le boîtier pendant les coupures</text>
+      <line x1="180" y1="454" x2="180" y2="474" class="l-pow"/>
+      <text x="14" y="552" class="s-ts">Schéma de principe, pas à l'échelle.</text>
+    </svg>
+    <p class="cap">Vue de face du coffret. En vert : ce que nous fournissons.</p>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Élément</th><th>À quoi il sert</th><th>Ce qu'il faut exiger</th><th>Exemples (à comparer)</th></tr></thead>
+      <tbody>
+        <tr><td><b>Contrôleur de piste</b></td><td>Parle aux pompes et au totem dans leur protocole : changement de prix, autorisation, relecture, compteurs.</td><td>Gilbarco Two-Wire et Wayne DART sur des ports séparés ; autorisation automatique ; interface ouverte (JSON ou autre) ; garde les prix après une coupure ; support local.</td><td>Technotrade PTS-2 ; Gilbarco Epsilon ; DOMS PSS 5000</td></tr>
+        <tr><td><b>Convertisseur de boucle de courant</b></td><td>Les pompes Gilbarco communiquent par une boucle de courant à 2 fils. Le convertisseur la relie au port RS-485 ou RS-232 du contrôleur. C'est un simple pont électrique, pas un traducteur de protocole <span class="tag v">vérifié</span>.</td><td>Compatible Gilbarco Two-Wire ; nombre de sorties suffisant (une par liaison de pompes) ; isolation.</td><td>Convertisseur « GB » Technotrade ; interface Levtech 4 sorties</td></tr>
+        <tr><td><b>Liaison Wayne</b></td><td>Selon le réglage de la pompe : RS-485 direct ou boucle de courant <span class="tag v">vérifié</span> (réglage « liaison série » de la pompe Helix).</td><td>Isolation galvanique ; convertisseur de boucle Wayne si la pompe reste en boucle de courant.</td><td>Fourni par le vendeur du contrôleur</td></tr>
+        <tr><td><b>Passerelle Linux</b></td><td>Fait tourner notre logiciel : liaison chiffrée avec le cloud, vérification de signature, anti-rejeu, file en mémoire permanente, programmation à l'heure, accusés.</td><td>Linux industriel sur rail DIN ; stockage permanent ; horloge sauvegardée ; chien de garde ; 0 à 60 °C ; mises à jour signées.</td><td>Ordinateur industriel sur rail DIN (gammes Moxa UC, Revolution Pi…)</td></tr>
+        <tr><td><b>Routeur 4G</b></td><td>Relie la station à Internet, indépendamment du réseau de la caisse. Connexion sortante seulement.</td><td>2 SIM ou bascule Wi-Fi ; VPN ; pare-feu ; gestion à distance ; heure réseau.</td><td>Routeurs industriels 4G (gamme Teltonika RUT…)</td></tr>
+        <tr><td><b>Antenne 4G extérieure</b></td><td>Bonne réception malgré le coffret métallique et la canopée.</td><td>Antenne MIMO, câble court, parafoudre coaxial.</td><td>—</td></tr>
+        <tr><td><b>Alimentation 24 V DC</b></td><td>Alimente contrôleur, passerelle et routeur depuis l'onduleur.</td><td>Rail DIN, marge de puissance d'au moins 50 %.</td><td>Alimentations industrielles rail DIN</td></tr>
+        <tr><td><b>Onduleur</b></td><td>Évite l'arrêt du boîtier pendant les coupures, donc l'arrêt des pompes pilotées.</td><td>Chaque station a un groupe électrogène : l'onduleur doit surtout tenir le temps du basculement et du démarrage du groupe (prévoir au moins 30 minutes de marge). À dimensionner sur la consommation réelle (quelques dizaines de watts pour le coffret <span class="tag c">à mesurer</span>).</td><td>—</td></tr>
+        <tr><td><b>Parafoudres</b></td><td>Protègent contre la foudre et les surtensions sur le secteur, l'antenne et les lignes vers les pompes et le totem.</td><td>Un par ligne sortante ; terre commune de bonne qualité.</td><td>—</td></tr>
+        <tr><td><b>Coffret</b></td><td>Protège de la poussière, de l'eau, des chocs et des mains curieuses.</td><td>Métallique, IP65, ventilé, fermé à clé, contact d'ouverture relié à la passerelle (alerte au siège).</td><td>—</td></tr>
+        <tr><td><b>SIM data</b></td><td>Abonnement 4G de la station.</td><td>Offre M2M avec APN privé si possible. Le trafic est très faible.</td><td>Orange, MTN, Moov</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 5 -->
+<section id="cablage">
+  <div class="sec-num">5 · Plan de branchement</div>
+  <h2>Comment tout se raccorde</h2>
+  <div class="legend">
+    <span><i class="sw" style="border-color:var(--red)"></i>Alimentation</span>
+    <span><i class="sw" style="border-color:var(--blue)"></i>Données (Ethernet, RS-485)</span>
+    <span><i class="sw" style="border-color:var(--accent)"></i>Boucle de courant (pompes)</span>
+    <span><i class="sw" style="border-color:var(--amber);border-top-style:dashed"></i>Radio 4G</span>
+    <span><i class="sw" style="border-color:var(--fg2);border-top-style:dashed"></i>Existant, on n'y touche pas</span>
+  </div>
+  <div class="fig">
+    <svg viewBox="0 0 360 700" role="img" aria-labelledby="f2t">
+      <title id="f2t">Schéma de câblage : tableau électrique et onduleur vers le coffret ; à l'intérieur, routeur, passerelle et contrôleur reliés en Ethernet ; du contrôleur partent une boucle de courant vers les pompes Gilbarco, une liaison DART vers les pompes Wayne et une liaison RS-485 vers le totem. Les pompes sont en zone à risque.</title>
+      <!-- tableau electrique -->
+      <rect x="10" y="10" width="130" height="50" rx="6" class="s-exist"/>
+      <text x="20" y="32" class="s-t">Tableau électrique</text><text x="20" y="48" class="s-ts">existant · 230 V</text>
+      <rect x="200" y="10" width="150" height="50" rx="6" class="s-box"/>
+      <text x="210" y="32" class="s-t">Onduleur</text><text x="210" y="48" class="s-ts">disjoncteur dédié</text>
+      <path d="M140 35 H200" class="l-pow"/>
+      <!-- cloud -->
+      <text x="252" y="86" class="s-ts">Internet / cloud</text>
+      <path d="M300 92 V118" class="l-rf"/>
+      <!-- coffret -->
+      <rect x="10" y="118" width="340" height="250" rx="10" class="s-our"/>
+      <text x="20" y="138" class="s-tb">Coffret, local technique</text>
+      <path d="M275 60 V118" class="l-pow"/>
+      <rect x="200" y="150" width="140" height="48" rx="6" class="s-box"/><text x="210" y="172" class="s-t">Routeur 4G</text><text x="210" y="188" class="s-tm">ETH1</text>
+      <rect x="20" y="150" width="150" height="48" rx="6" class="s-box"/><text x="30" y="172" class="s-t">Passerelle Linux</text><text x="30" y="188" class="s-tm">ETH</text>
+      <path d="M170 174 H200" class="l-data"/>
+      <rect x="20" y="222" width="320" height="58" rx="6" class="s-box"/>
+      <text x="30" y="244" class="s-tb">Contrôleur de piste</text>
+      <text x="30" y="264" class="s-tm">ETH · port 1 · port 2 · port 3 (totem)</text>
+      <path d="M95 198 V222" class="l-data"/>
+      <rect x="20" y="300" width="100" height="50" rx="6" class="s-box"/><text x="28" y="320" class="s-t">Convert.</text><text x="28" y="336" class="s-tm">RS-485→boucle</text>
+      <rect x="130" y="300" width="100" height="50" rx="6" class="s-box"/><text x="138" y="320" class="s-t">Isolateur</text><text x="138" y="336" class="s-tm">RS-485 Wayne</text>
+      <rect x="240" y="300" width="100" height="50" rx="6" class="s-box"/><text x="248" y="320" class="s-t">Parafoudre</text><text x="248" y="336" class="s-tm">RS-485 totem</text>
+      <path d="M70 280 V300" class="l-data"/><path d="M180 280 V300" class="l-data"/><path d="M290 280 V300" class="l-data"/>
+      <!-- gaines -->
+      <path d="M70 350 V470" class="l-loop"/>
+      <path d="M180 350 V470" class="l-loop"/>
+      <path d="M290 350 V580" class="l-data"/>
+      <!-- zone atex -->
+      <rect x="10" y="440" width="236" height="220" rx="10" class="s-haz"/>
+      <text x="20" y="460" class="s-tb">Zone à risque (ATEX)</text>
+      <rect x="20" y="470" width="100" height="74" rx="6" class="s-exist"/><text x="28" y="490" class="s-t">Pompe</text><text x="28" y="506" class="s-t">Gilbarco 1</text><text x="28" y="530" class="s-tm">boîte jonction</text>
+      <rect x="20" y="570" width="100" height="74" rx="6" class="s-exist"/><text x="28" y="590" class="s-t">Pompe</text><text x="28" y="606" class="s-t">Gilbarco 2</text><text x="28" y="630" class="s-tm">même boucle</text>
+      <path d="M70 544 V570" class="l-loop"/>
+      <rect x="130" y="470" width="106" height="74" rx="6" class="s-exist"/><text x="138" y="490" class="s-t">Pompe</text><text x="138" y="506" class="s-t">Wayne 1</text><text x="138" y="530" class="s-tm">DART</text>
+      <rect x="130" y="570" width="106" height="74" rx="6" class="s-exist"/><text x="138" y="590" class="s-t">Pompe</text><text x="138" y="606" class="s-t">Wayne 2</text><text x="138" y="630" class="s-tm">DART</text>
+      <path d="M183 544 V570" class="l-loop"/>
+      <!-- totem -->
+      <rect x="258" y="580" width="92" height="80" rx="6" class="s-exist"/><text x="266" y="602" class="s-t">Totem</text><text x="266" y="618" class="s-tm">carte LED</text><text x="266" y="640" class="s-ts">hors zone</text>
+      <text x="10" y="690" class="s-ts">Si la station n'a qu'une marque, une seule branche sert.</text>
+    </svg>
+    <p class="cap">Plan de principe. Entre le coffret et les pompes, les câbles passent dans des gaines enterrées posées par l'installateur agréé. Les repères exacts (bornes, vitesse, adresses) seront relevés sur chaque pompe.</p>
+  </div>
+
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Liaison</th><th>Câble</th><th>Remarques</th></tr></thead>
+      <tbody>
+        <tr><td>Tableau → onduleur → coffret</td><td>Câble secteur, disjoncteur dédié</td><td>Pas sur le même circuit que les moteurs des pompes. Terre vérifiée.</td></tr>
+        <tr><td>Routeur ↔ passerelle ↔ contrôleur</td><td>Cordons Ethernet courts, dans le coffret</td><td>Réseau privé du coffret, séparé de la caisse.</td></tr>
+        <tr><td>Contrôleur → pompes Gilbarco</td><td>Paire torsadée, dans la gaine de données vers la boîte de jonction de chaque pompe</td><td>Boucle de courant à 2 fils, plusieurs pompes sur la même boucle (jusqu'à 16 par canal selon les guides <span class="tag c">à confirmer</span>). Chaque pompe a son numéro.</td></tr>
+        <tr><td>Contrôleur → pompes Wayne</td><td>Paire torsadée blindée</td><td>RS-485 ou boucle de courant selon le réglage de la pompe.</td></tr>
+        <tr><td>Contrôleur → totem</td><td>Paire torsadée blindée RS-485, ou Ethernet / 4G du totem</td><td>Résistances de 120 Ω aux deux extrémités, parafoudre côté mât (foudre).</td></tr>
+        <tr><td>Antenne → routeur</td><td>Coaxial 50 Ω, connecteur SMA</td><td>Le plus court possible ; parafoudre coaxial si l'antenne est sur le toit.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note warn"><b class="t">La partie entre le bâtiment et les pompes est réservée à l'installateur agréé</b><p>Toute gaine qui entre dans une pompe doit être étanche aux vapeurs (raccords d'étanchéité). Le câble de données doit être coupé par l'arrêt d'urgence de la station, comme le prévoient les guides des fabricants <span class="tag v">vérifié</span> (Gasboy, groupe Gilbarco).</p></div>
+</section>
+
+<!-- 6 -->
+<section id="flux">
+  <div class="sec-num">6 · Du site web à la pompe</div>
+  <h2>Comment l'information voyage et comment le prix change</h2>
+  <div class="fig">
+    <svg viewBox="0 0 360 480" role="img" aria-labelledby="f3t">
+      <title id="f3t">Chaîne de l'information : site web, API cloud qui signe, broker MQTT, 4G, passerelle qui vérifie, contrôleur qui écrit dans les pompes puis le totem, accusés qui remontent.</title>
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" class="ah"/></marker></defs>
+      <rect x="20" y="10" width="200" height="44" rx="6" class="s-box"/><text x="30" y="37" class="s-t">1 · Site web (siège)</text>
+      <rect x="20" y="74" width="200" height="44" rx="6" class="s-box"/><text x="30" y="101" class="s-t">2 · API cloud : contrôle, signe</text>
+      <rect x="20" y="138" width="200" height="44" rx="6" class="s-box"/><text x="30" y="165" class="s-t">3 · Broker MQTT (TLS)</text>
+      <rect x="20" y="214" width="200" height="44" rx="6" class="s-our"/><text x="30" y="241" class="s-t">4 · Passerelle : vérifie, garde</text>
+      <rect x="20" y="278" width="200" height="44" rx="6" class="s-our"/><text x="30" y="305" class="s-t">5 · Contrôleur de piste</text>
+      <rect x="20" y="350" width="94" height="52" rx="6" class="s-exist"/><text x="28" y="372" class="s-t">6 · Pompes</text><text x="28" y="390" class="s-ts">d'abord</text>
+      <rect x="126" y="350" width="94" height="52" rx="6" class="s-exist"/><text x="134" y="372" class="s-t">7 · Totem</text><text x="134" y="390" class="s-ts">ensuite</text>
+      <path d="M120 54 V72" class="l-data" marker-end="url(#ar)"/>
+      <path d="M120 118 V136" class="l-data" marker-end="url(#ar)"/>
+      <path d="M120 182 V212" class="l-rf"/><text x="128" y="202" class="s-ts">4G</text>
+      <path d="M120 258 V276" class="l-data" marker-end="url(#ar)"/>
+      <path d="M67 322 V348" class="l-loop" marker-end="url(#ar)"/>
+      <path d="M173 322 V348" class="l-data" marker-end="url(#ar)"/>
+      <!-- retour -->
+      <path d="M240 380 H300 V30 H222" class="l-ex" marker-end="url(#ar)"/>
+      <text x="252" y="210" class="s-ts" transform="rotate(90 252 210)">accusés : reçu, appliqué, relu</text>
+      <text x="20" y="440" class="s-ts">Commandes vers le bas ; confirmations vers le haut (pointillés).</text>
+    </svg>
+  </div>
+  <ol class="steps">
+    <li><div><b>Le siège saisit la grille officielle</b> (ex. Super 905, Gasoil 725) avec l'heure d'entrée en vigueur, par exemple le 1er du mois à 00:00. Une deuxième personne la valide. <i>Déjà construit.</i></div></li>
+    <li><div><b>Le cloud prépare une commande par station</b> : identifiant unique, numéro d'ordre, prix, heure d'application, date d'expiration. Il la <b>signe</b> avec la clé du boîtier. <i>Déjà construit.</i></div></li>
+    <li><div><b>Envoi par MQTT chiffré</b>, plusieurs heures à l'avance. Si la 4G est coupée, le broker garde le message et le livre à la reconnexion ; le cloud relance aussi tant qu'il n'a pas d'accusé. <i>Déjà construit et testé.</i></div></li>
+    <li><div><b>La passerelle vérifie</b> la signature, le destinataire, l'expiration, l'ordre (une commande ancienne ne passe jamais après une récente), les doublons et les bornes de prix. Elle écrit la commande dans sa mémoire permanente et répond « reçu », puis « programmé ». <i>Déjà construit, avec équipements simulés.</i></div></li>
+    <li><div><b>À l'heure dite</b>, la passerelle envoie les nouveaux prix au contrôleur de piste par son interface locale. <i>À construire : le « pilote » du contrôleur choisi.</i></div></li>
+    <li><div><b>Le contrôleur transmet le prix à chaque pompe</b> dans son protocole (Gilbarco Two-Wire, Wayne DART). Une pompe ne change pas de prix pendant un plein : le nouveau prix s'applique quand le pistolet est raccroché <span class="tag c">comportement habituel, à vérifier par modèle</span>. Le contrôleur relit le prix mémorisé dans chaque pompe.</div></li>
+    <li><div><b>Le totem est mis à jour ensuite</b>, une fois les pompes confirmées. Le client ne voit donc jamais affiché un prix que les pompes ne facturent pas encore. Le totem est relu s'il le permet.</div></li>
+    <li><div><b>Accusés</b> : la passerelle remonte « appliqué » avec les prix relus pompe par pompe, ou « partiel » avec la pompe en échec. Le siège voit la conformité en direct et reçoit une alerte en cas d'écart. <i>Déjà construit.</i></div></li>
+  </ol>
+  <div class="note info"><b class="t">À corriger dans le code actuel</b><p>Le simulateur écrit aujourd'hui le totem avant les pompes. Il faudra inverser l'ordre (pompes d'abord) en même temps que l'écriture du pilote du contrôleur réel.</p></div>
+</section>
+
+<!-- 7 -->
+<section id="pompes">
+  <div class="sec-num">7 · Pompe par pompe</div>
+  <h2>Gilbarco Frontier et Wayne</h2>
+  <div class="card">
+    <h3>Gilbarco Frontier</h3>
+    <ul>
+      <li><b>Protocole</b> : la fiche du Frontier F170 indique le protocole « GVR 2-wire », c'est-à-dire la boucle de courant à 2 fils de Gilbarco <span class="tag v">vérifié</span>. Plusieurs pompes peuvent partager la même boucle, chacune avec son numéro.</li>
+      <li><b>Mode de fonctionnement</b> : le manuel d'installation commun aux pompes Gilbarco prévoit un code de programmation pour choisir entre « autonome » et « 2-wire » (le mode 2-wire est le réglage d'usine), et un autre pour régler le numéro de pompe <span class="tag v">vérifié</span>. Le modèle Frontier vendu en Afrique peut différer : <span class="tag c">à confirmer</span> avec la plaque et le distributeur.</li>
+      <li><b>Prix aujourd'hui</b> : saisis à la pompe par un code de programmation (prix unitaire par produit), seulement quand aucun plein n'est en cours <span class="tag c">source secondaire</span>.</li>
+      <li><b>Avec le boîtier</b> : le technicien passe la pompe en mode 2-wire et lui donne un numéro ; le contrôleur envoie ensuite les prix. Liaison : contrôleur → convertisseur de boucle → boîte de jonction de la pompe.</li>
+      <li><b>À demander au distributeur Gilbarco</b> : version du calculateur, comportement si la communication est perdue, maintien du clavier de prédétermination en mode piloté, effet sur la garantie.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Wayne (probablement Helix)</h3>
+    <ul>
+      <li><b>Protocole</b> : le calculateur des pompes Helix propose plusieurs liaisons : « DART standard », « DART complet », LON, boucle de courant US. La carte de connexion a un connecteur RS-485 et des connecteurs de boucle de courant <span class="tag v">vérifié</span>.</li>
+      <li><b>Mode autonome</b> : activé avec la télécommande infrarouge du technicien ; sur certains modèles, un cavalier sur la carte d'affichage sert de sécurité supplémentaire <span class="tag v">vérifié</span> (Helix 6000).</li>
+      <li><b>Prix</b> : réglables à la pompe en mode autonome. Quand la communication avec un système de caisse est activée, <b>les prix envoyés par ce système remplacent ceux saisis à la pompe</b> <span class="tag v">vérifié</span> (Helix 5000). C'est le comportement voulu.</li>
+      <li><b>Avec le boîtier</b> : le technicien choisit le protocole DART et l'adresse de la pompe ; le contrôleur est réglé sur « Wayne DART ».</li>
+      <li><b>À demander au distributeur Wayne</b> : modèle exact (plaque), protocole DART disponible sur ce calculateur, retour en mode autonome si le contrôleur est absent.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="totem">
+  <div class="sec-num">8 · Le totem</div>
+  <h2>Trois situations selon la station</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Cas</th><th>Ce qu'on voit</th><th>Solution</th></tr></thead>
+      <tbody>
+        <tr><td><b>Totem LED avec carte de pilotage ouverte</b></td><td>Pylône neuf (photo 5), carte derrière une trappe, télécommande ou clavier.</td><td>Relever la marque de la carte. Si elle a un port RS-485 documenté ou fait partie des afficheurs gérés par le contrôleur, on la relie au contrôleur.</td></tr>
+        <tr><td><b>Totem réglé au « bâton magnétique »</b></td><td>Cas signalé pour le totem neuf : on change les chiffres en approchant un bâton aimanté de l'afficheur.</td><td>Ce réglage local ne suppose aucune liaison de communication. C'est souvent le signe d'une carte sans port exploitable <span class="tag c">à vérifier</span>. Relever la marque sur la carte ; sinon, remplacer la carte de pilotage.</td></tr>
+        <tr><td><b>Totem LED à protocole fermé</b></td><td>Carte sans documentation, fabricant injoignable.</td><td>Remplacer seulement la <b>carte de pilotage</b> par une carte au protocole connu (RS-485, ou 4G avec interface). Les modules LED restent en place. Coût limité, à chiffrer.</td></tr>
+        <tr><td><b>Panneau peint ou à chiffres manuels</b></td><td>Photo 6.</td><td>Pas d'automatisation possible. Rester en phase 0 (le gérant change et confirme par photo) ou installer un module de prix LED.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="emplacement">
+  <div class="sec-num">9 · Où installer le boîtier</div>
+  <h2>Dans le bâtiment, loin des pompes et des cuves</h2>
+  <div class="fig">
+    <svg viewBox="0 0 360 380" role="img" aria-labelledby="f4t">
+      <title id="f4t">Vue de dessus d'une station : bâtiment avec le coffret dans le local technique, îlots de pompes sous la canopée en zone à risque, cuves enterrées et évents en zone à risque, totem près de la route.</title>
+      <rect x="10" y="10" width="340" height="300" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <!-- route -->
+      <rect x="10" y="320" width="340" height="44" rx="4" class="s-box2"/><text x="150" y="347" class="s-ts">route</text>
+      <!-- batiment -->
+      <rect x="20" y="20" width="150" height="90" rx="6" class="s-box"/>
+      <text x="30" y="40" class="s-t">Bâtiment, boutique</text>
+      <rect x="30" y="52" width="70" height="48" rx="5" class="s-our"/><text x="36" y="72" class="s-ts">Local</text><text x="36" y="88" class="s-ts">technique</text>
+      <circle cx="88" cy="62" r="6" fill="var(--accent)"/>
+      <text x="108" y="84" class="s-ts">← coffret</text>
+      <!-- cuves -->
+      <rect x="200" y="20" width="140" height="80" rx="40" class="s-haz"/>
+      <text x="218" y="56" class="s-t">Cuves</text><text x="218" y="74" class="s-ts">et évents</text>
+      <!-- ilots -->
+      <rect x="40" y="150" width="270" height="110" rx="10" class="s-haz"/>
+      <text x="50" y="170" class="s-ts">Zone à risque autour des pompes</text>
+      <rect x="70" y="190" width="70" height="44" rx="5" class="s-exist"/><text x="80" y="217" class="s-ts">Îlot 1</text>
+      <rect x="210" y="190" width="70" height="44" rx="5" class="s-exist"/><text x="220" y="217" class="s-ts">Îlot 2</text>
+      <!-- gaines -->
+      <path d="M88 100 V190" class="l-loop"/><path d="M88 140 H245 V190" class="l-loop"/>
+      <!-- totem -->
+      <rect x="300" y="270" width="22" height="44" rx="3" class="s-exist"/><text x="230" y="292" class="s-ts">totem</text>
+      <path d="M100 100 C 180 112, 335 118, 335 200 V 292 H 322" class="l-data"/>
+      <!-- antenne -->
+      <circle cx="160" cy="20" r="5" fill="var(--amber)"/>
+    </svg>
+    <p class="cap">Vue de dessus de principe. Point orange : antenne 4G sur le toit. Le câble du totem contourne la zone des pompes. Les zones réelles sont fixées par l'étude ATEX de la station.</p>
+  </div>
+  <div class="card">
+    <h3>Bon emplacement</h3>
+    <ul>
+      <li>Dans le <b>local technique ou l'arrière-boutique</b>, hors de toute zone à risque, près du tableau électrique et du départ des gaines vers les pompes.</li>
+      <li>À plus d'un mètre du sol (inondations de saison des pluies), à l'abri du soleil direct, avec de l'air autour du coffret.</li>
+      <li>À moins de 100 m de câble des pompes et du totem (au-delà, prévoir un relais Ethernet).</li>
+      <li>Antenne 4G à l'extérieur, en hauteur, hors des parties métalliques de la canopée.</li>
+    </ul>
+    <h3>À éviter</h3>
+    <ul>
+      <li><b>Jamais</b> à l'intérieur d'une pompe, sous la canopée, sur un îlot ou près des cuves, des évents ou du point de dépotage du camion.</li>
+      <li>Pas dans le pied du totem : chaleur, route, vandalisme, trop loin des pompes.</li>
+      <li>Pas sur le circuit électrique des moteurs de pompes.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 10 -->
+<section id="risques">
+  <div class="sec-num">10 · Risques et parades</div>
+  <h2>Ce qui peut mal tourner</h2>
+  <div class="tbl">
+    <table>
+      <thead><tr><th>Risque</th><th>Gravité</th><th>Parade</th></tr></thead>
+      <tbody>
+        <tr><td><b>Boîtier en panne : pompes pilotées bloquées</b></td><td><span class="tag x">élevée</span></td><td>Onduleur ; boîtier de rechange par zone ; autorisation automatique au décroché ; procédure écrite et testée pour remettre chaque pompe en mode autonome (technicien joignable 24 h/24) ; demander au fabricant si la pompe peut repasser seule en mode autonome.</td></tr>
+        <tr><td><b>Explosion, incendie</b></td><td><span class="tag x">élevée</span></td><td>Boîtier hors zone ; aucune intervention dans la pompe sans technicien agréé ; gaines étanches ; liaison coupée par l'arrêt d'urgence ; étude ATEX du site.</td></tr>
+        <tr><td><b>Prix affiché différent du prix facturé</b></td><td><span class="tag x">élevée</span></td><td>Pompes d'abord, totem ensuite ; relecture ; alerte en cas d'écart ; changement programmé à une heure creuse.</td></tr>
+        <tr><td><b>Prix erroné envoyé à tout le réseau</b></td><td><span class="tag x">élevée</span></td><td>Grille validée à deux ; blocage hors grille ; bornes locales dans la passerelle ; signature. <i>Déjà construit.</i></td></tr>
+        <tr><td><b>Clavier de la pompe inutilisable en mode piloté</b></td><td><span class="tag x">élevée</span></td><td>Les pompistes servent au litre ou au montant avec le clavier de la pompe (confirmé par AFRIQUIA). Exiger du fournisseur du contrôleur une démonstration : prédétermination au clavier qui fonctionne en mode piloté, sur un Gilbarco Frontier et sur une Wayne. Critère éliminatoire.</td></tr>
+        <tr><td><b>Garantie des pompes, métrologie</b></td><td><span class="tag c">moyenne</span></td><td>Faire le réglage par le distributeur Gilbarco/Wayne ou son agent ; ne jamais briser un scellé ; informer le service de métrologie si la réglementation l'exige <span class="tag c">à vérifier</span>.</td></tr>
+        <tr><td><b>Protocole non disponible sur un calculateur ancien</b></td><td><span class="tag c">moyenne</span></td><td>Relever les plaques avant d'acheter ; tester sur une pompe de chaque modèle au banc ou en station.</td></tr>
+        <tr><td><b>Foudre, surtensions</b></td><td><span class="tag c">moyenne</span></td><td>Parafoudres sur le secteur, l'antenne et chaque ligne ; bonne terre ; isolation galvanique.</td></tr>
+        <tr><td><b>4G instable</b></td><td><span class="tag v">faible</span></td><td>Commandes envoyées à l'avance ; file locale ; 2 SIM ; relances. <i>Déjà construit.</i></td></tr>
+        <tr><td><b>Coupure électrique pendant un changement</b></td><td><span class="tag v">faible</span></td><td>Onduleur ; écritures idempotentes reprises au redémarrage. <i>Déjà construit.</i></td></tr>
+        <tr><td><b>Piratage, accès au boîtier</b></td><td><span class="tag c">moyenne</span></td><td>Aucun port entrant ; VPN ; certificat par boîtier ; coffret fermé avec alerte d'ouverture ; mot de passe d'usine changé sur chaque équipement.</td></tr>
+        <tr><td><b>Chaleur, poussière</b></td><td><span class="tag c">moyenne</span></td><td>Matériel industriel jusqu'à 60 °C ; coffret ventilé à l'ombre.</td></tr>
+        <tr><td><b>Dépendance à un fournisseur</b></td><td><span class="tag c">moyenne</span></td><td>Notre passerelle isole le cloud du contrôleur : changer de contrôleur ne demande qu'un nouveau pilote.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="etapes">
+  <div class="sec-num">11 · Mise en œuvre</div>
+  <h2>Dans quel ordre avancer</h2>
+  <ol class="steps">
+    <li><div><b>Inventaire</b> : plaque de chaque pompe et du totem, présence d'une gaine de données libre, prestataire de maintenance (celui de la photo 4).</div></li>
+    <li><div><b>Devis comparés</b> : contrôleur multimarque (PTS-2 ou équivalent) et offre du distributeur Gilbarco (Epsilon ou DOMS). Exiger la liste des pompes et totems compatibles, la documentation de l'interface et le support à Abidjan.</div></li>
+    <li><div><b>Accord écrit</b> d'AFRIQUIA et du distributeur des pompes (garantie, réglages).</div></li>
+    <li><div><b>Banc d'essai au bureau</b> : contrôleur, passerelle et routeur, sans pompe ; écriture du pilote du contrôleur dans notre logiciel.</div></li>
+    <li><div><b>Une pompe d'abord</b>, en station, avec le technicien : passage en mode piloté, changement de prix de test, retour au mode autonome chronométré.</div></li>
+    <li><div><b>Station pilote complète</b> pendant 2 à 4 semaines, avec la phase 0 en secours (gérant prévenu et photo).</div></li>
+    <li><div><b>Généralisation</b> station par station ; les stations sans automatisation possible restent en phase 0.</div></li>
+  </ol>
+</section>
+
+<!-- 12 -->
+<section id="questions">
+  <div class="sec-num">12 · Pour aller plus loin</div>
+  <h2>Les questions que je vous pose</h2>
+  <div class="card">
+    <ol>
+      <li>Pouvez-vous m'envoyer la <b>photo de la plaque signalétique</b> de chaque modèle de pompe (marque, modèle, année, numéro de série), et celle de la plaque du calculateur si un technicien ouvre la tête ?</li>
+      <li>Les pompistes utilisent-ils le <b>clavier de prédétermination</b> (montant ou volume) ? Y a-t-il une caisse ou un logiciel relié aux pompes, même ancien ?</li>
+      <li>Existe-t-il une <b>gaine ou un câble de données libre</b> entre le bâtiment et les îlots ? (Le technicien de maintenance le sait.)</li>
+      <li>Pour le totem neuf : une photo de <b>l'arrière ou de la trappe</b> (carte de pilotage) et de l'outil utilisé pour changer les prix (télécommande, clavier, téléphone).</li>
+      <li>Quelle est la <b>société de la photo 4</b> (étalonnage) ? Est-elle agréée par Gilbarco ou Wayne ?</li>
+      <li>Combien de stations ont des pompes Gilbarco, des pompes Wayne, ou les deux ? Combien ont un totem électronique ?</li>
+      <li>Les <b>coupures de courant</b> sont-elles fréquentes, et les stations ont-elles un groupe électrogène ?</li>
+    </ol>
+  </div>
+</section>
+
+<!-- 13 -->
+<section id="sources">
+  <div class="sec-num">13 · Sources</div>
+  <h2>Documents consultés</h2>
+  <ul class="src">
+    <li>Gilbarco, Frontier Series II F170 : <a href="https://www.gilbarco.com/sea/products/pumps-and-dispensers/frontier/f170">gilbarco.com/sea/…/frontier/f170</a></li>
+    <li>Gilbarco, manuel d'installation et de mise en service de toutes les pompes GVR (DQ98014-001) : <a href="https://www.gilbarco.com/au/sites/gilbarco.com.au/files/2024-08/DQ98014-001_A%20GVR%20Dispensers%20%20Installation%20_%20Commissioning%20Manual.pdf">gilbarco.com/au (PDF)</a></li>
+    <li>Gilbarco, pages Frontier : <a href="https://www.gilbarco.com/au/products/pumps-and-dispensers/frontier">gilbarco.com/au/…/frontier</a> ; <a href="https://www.gilbarco.com/mea/blog/missing-piece-your-fuel-management-system-discover-frontier-fuel-dispensers">blog Gilbarco MEA</a></li>
+    <li>Wayne Helix 4000/5000, manuel d'installation (WU017834) : <a href="https://www.gysbi.gy/wp-content/uploads/2024/07/Attachment-1-WU017834-Rev-05-EN-Helix-4000-5000-Standard-EC-SHC-Installation-Operation-1.pdf">gysbi.gy (PDF)</a></li>
+    <li>Wayne Helix, manuel de service (WM048523) : <a href="https://www.waynemexico.com/descargas/manuales/WM048523%20Helix%20Service%20Manual%20Rev%2008.pdf">waynemexico.com (PDF)</a></li>
+    <li>Wayne Helix 5000, réglage des prix : <a href="https://www.manualslib.com/manual/3938040/Wayne-Helix-5000.html?page=39">manualslib.com</a> ; Helix 6000 IEC : <a href="https://www.gritservice.it/IT/CATALOGHI/WAYNE/EROGATORI%20BENZINA/HELIX/WM048521%20HELIX%206000%20IEC%20DEF.pdf">gritservice.it (PDF)</a></li>
+    <li>Technotrade PTS-2 : <a href="https://www.technotrade.ua/pts2-forecourt-controller.html">technotrade.ua</a> ; convertisseur Gilbarco : <a href="https://www.technotrade.ua/gilbarco-interface-converter.html">technotrade.ua</a> ; Afrique : <a href="https://www.technotrade.ua/pts-2-IoT-Forecourt-Controller-Unlocks-Pan-African-Growth">technotrade.ua</a> ; manuel PTS : <a href="https://pdfcoffee.com/pts-manual-pdf-free.html">pdfcoffee.com</a></li>
+    <li>Interface boucle de courant Gilbarco : <a href="https://levtech.ro/product/current-loop-for-gilbarco-2-wire/">levtech.ro</a></li>
+    <li>Gilbarco Epsilon : <a href="https://www.gilbarco.com/eu/our-solutions/retail-solutions/epsilon-site-controller">gilbarco.com/eu</a> ; DOMS PSS 5000 : <a href="https://www.gilbarco.com/mea/sites/gilbarco.com.mea/files/pdfs/PSS_5000_ForecourtController_ENG_80540601.pdf">gilbarco.com/mea (PDF)</a></li>
+    <li>STATION Forecourt Controller : <a href="https://www.stationdispenser.com/forecourt-controller/">stationdispenser.com</a></li>
+    <li>Gasboy, consignes de câblage (arrêt d'urgence, paires torsadées) : <a href="https://www.jmesales.com/content/docs/Gasboy/FE-371A.pdf">jmesales.com (PDF)</a></li>
+    <li>Guides Allied pour pompes Gilbarco et Wayne : <a href="https://www.alliedelectronics.com/PDF/installation-startup-guides/Gilbarco-Wayne-Installation-Guide.pdf">alliedelectronics.com (PDF)</a></li>
+    <li>Totems LED, options de pilotage : <a href="https://www.royal-display.com/gas-station-price-sign/">royal-display.com</a></li>
+    <li>INRS, stations-service : <a href="https://www.inrs.fr/dms/inrs/CataloguePapier/ED/TI-ED-6256/ed6256.pdf">inrs.fr (PDF)</a></li>
+    <li>Prix de novembre 2026 : <a href="https://www.koaci.com/article/2026/11/01/cote-divoire/societe/cote-divoire-pas-de-changement-a-la-pompe-des-prix-des-produits-petroliers-pour-le-mois-de-novembre_202168.html">koaci.com</a> ; <a href="https://news.abidjan.net/articles/748754/cote-divoire-hausse-du-carburant-les-prix-du-super-sans-plomb-et-du-gasoil-passent-respectivement-a-905-fcfa-et-725-fcfa">abidjan.net</a></li>
+  </ul>
+</section>
+
+</div>

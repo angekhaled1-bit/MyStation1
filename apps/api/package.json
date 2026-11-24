@@ -1,0 +1,32 @@
+{
+  "name": "@fpc/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "API cloud : stations, prix, commandes signées vers les boîtiers, accusés, relances, alertes.",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && cp -r src/db/migrations dist/db/",
+    "start": "npm run build && node dist/main.js",
+    "seed": "npm run build && node dist/db/seed.js",
+    "test": "npm run build && node --import tsx --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@fpc/protocol": "0.1.0",
+    "@nestjs/common": "^12.5.1",
+    "@nestjs/core": "^12.5.1",
+    "@nestjs/platform-express": "^12.5.1",
+    "mqtt": "^5.16.1",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
+    "aedes": "^1.2.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3"
+  }
+}
